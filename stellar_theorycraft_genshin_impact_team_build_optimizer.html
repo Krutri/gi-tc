@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stellar Theorycraft — Genshin Impact Team & Artifact Optimizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Cinzel', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            void: '#0b0e17',
+            card: '#131826',
+            cardHover: '#192033',
+            borderSubtle: '#232d45',
+            stellarGold: '#eab308',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0e17;
+      color: #e2e8f0;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 85% 20%, rgba(234, 179, 8, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+      min-height: 100vh;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0e17; }
+    ::-webkit-scrollbar-thumb { background: #232d45; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b4b72; }
+    select, input {
+      color-scheme: dark;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    // =========================================================================
+    // 1. CONSTANTES & METADONNÉES GENSHIN IMPACT
+    // =========================================================================
+    const ELEMENTS = {
+      Pyro: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.4)', text: 'text-red-400' },
+      Hydro: { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.15)', border: 'rgba(56, 189, 248, 0.4)', text: 'text-sky-400' },
+      Cryo: { color: '#67e8f9', bg: 'rgba(103, 232, 249, 0.15)', border: 'rgba(103, 232, 249, 0.4)', text: 'text-cyan-300' },
+      Electro: { color: '#c084fc', bg: 'rgba(192, 132, 252, 0.15)', border: 'rgba(192, 132, 252, 0.4)', text: 'text-purple-400' },
+      Dendro: { color: '#4ade80', bg: 'rgba(74, 222, 128, 0.15)', border: 'rgba(74, 222, 128, 0.4)', text: 'text-green-400' },
+      Anemo: { color: '#2dd4bf', bg: 'rgba(45, 212, 191, 0.15)', border: 'rgba(45, 212, 191, 0.4)', text: 'text-teal-300' },
+      Geo: { color: '#facc15', bg: 'rgba(250, 204, 21, 0.15)', border: 'rgba(250, 204, 21, 0.4)', text: 'text-yellow-400' },
+    };
+
+    const ElementIcon = ({ element, size = 16 }) => {
+      const color = ELEMENTS[element]?.color || '#fff';
+      switch (element) {
+        case 'Pyro':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M12 2C9 6 6 9 6 14a6 6 0 0 0 12 0c0-3-1.5-5.5-3-7.5-.5 2-1.5 3-2.5 3C13.5 7.5 13 4.5 12 2z"/></svg>;
+        case 'Hydro':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M12 2.5C12 2.5 5 10.2 5 15a7 7 0 0 0 14 0c0-4.8-7-12.5-7-12.5zm0 16.5a4 4 0 0 1-4-4c0-1.5 1.2-3.6 4-7 2.8 3.4 4 5.5 4 7a4 4 0 0 1-4 4z"/></svg>;
+        case 'Cryo':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9L4.9 19.1"/><circle cx="12" cy="12" r="3" fill={color}/></svg>;
+        case 'Electro':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M13 2L4 14h7l-1 8 10-12h-7l0-8z"/></svg>;
+        case 'Dendro':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M17 3C10 3 5 8 5 15c0 2.5 1 4.5 2.5 6 1.5-3.5 4.5-6.5 8.5-8-2.5 2.5-4.5 5.5-5.5 8.5 5.5-.5 10.5-5 10.5-11.5C21 6 19.5 3 17 3z"/></svg>;
+        case 'Anemo':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2"><path d="M4 12c2-4 6-6 10-4s5 6 2 9-7 2-8-1c-.8-2.2 1-4.5 3.5-4.5 2 0 3.5 1.5 3 3.2"/><path d="M12 3c4 0 8 3 8 8"/></svg>;
+        case 'Geo':
+          return <svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M12 2L3 9l9 13 9-13-9-7zm0 3.5L17.5 9 12 17.5 6.5 9 12 5.5z"/></svg>;
+        default:
+          return null;
+      }
+    };
+
+    const STAT_LABELS = {
+      hp: 'PV Flat',
+      hp_: 'PV %',
+      atk: 'ATQ Flat',
+      atk_: 'ATQ %',
+      def: 'DÉF Flat',
+      def_: 'DÉF %',
+      em: 'Maîtrise Élém.',
+      er: 'Recharge Énergie %',
+      cr: 'Taux CRIT %',
+      cd: 'DGT CRIT %',
+      dmg_: 'Bonus DGT %',
+      pyro_: 'Bonus DGT Pyro %',
+      hydro_: 'Bonus DGT Hydro %',
+      cryo_: 'Bonus DGT Cryo %',
+      electro_: 'Bonus DGT Electro %',
+      dendro_: 'Bonus DGT Dendro %',
+      anemo_: 'Bonus DGT Anemo %',
+      geo_: 'Bonus DGT Geo %',
+    };
+
+    const MAIN_STAT_VALUES = {
+      hp: 4780,
+      atk: 311,
+      hp_: 46.6,
+      atk_: 46.6,
+      def_: 58.3,
+      em: 186.5,
+      er: 51.8,
+      cr: 31.1,
+      cd: 62.2,
+      pyro_: 46.6,
+      hydro_: 46.6,
+      cryo_: 46.6,
+      electro_: 46.6,
+      dendro_: 46.6,
+      anemo_: 46.6,
+      geo_: 46.6,
+    };
+
+    const SLOT_MAIN_OPTIONS = {
+      flower: ['hp'],
+      plume: ['atk'],
+      sands: ['atk_', 'hp_', 'def_', 'em', 'er'],
+      goblet: ['atk_', 'hp_', 'def_', 'em', 'pyro_', 'hydro_', 'cryo_', 'electro_', 'dendro_', 'anemo_', 'geo_'],
+      circlet: ['cr', 'cd', 'atk_', 'hp_', 'def_', 'em'],
+    };
+
+    const SLOT_NAMES = {
+      flower: 'Fleur de la vie',
+      plume: 'Plume de la mort',
+      sands: 'Sables du temps',
+      goblet: 'Coupe d\'éonothème',
+      circlet: 'Couronne de la raison',
+    };
+
+    // =========================================================================
+    // 2. BASE DE DONNÉES : PERSONNAGES, ARMES & SETS D'ARTÉFACTS
+    // =========================================================================
+    const CHARACTERS_DB = {
+      tsaritsa: {
+        id: 'tsaritsa',
+        name: 'Tsaritsa',
+        title: 'Archonte Cryo — Souveraine de Snezhnaya',
+        element: 'Cryo',
+        weapon: 'Catalyst',
+        rarity: 5,
+        baseHp: 13850,
+        baseAtk: 342,
+        baseDef: 790,
+        ascension: { stat: 'cd', value: 38.4 },
+        talents: {
+          na: { name: 'Décret Givré (N1-N3)', mult: 245, scale: 'atk', type: 'NA' },
+          ca: { name: 'Jugement Boréal (AC)', mult: 360, scale: 'atk', type: 'CA' },
+          skill: { name: 'Édit du Givre Éternel (E)', mult: 485, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Règne de l’Hiver Absolu (Q)', mult: 920, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'tsaritsa_a4', name: 'Passif A4 : Couronne de Givre (+25% DGT Cryo & +15% CRIT équipe)', team: true, stats: { cryo_: 25, cr: 15 } },
+          { id: 'tsaritsa_c2', name: 'C2 : Souveraineté (-20% RÉS Cryo/Hydro ennemis)', team: true, stats: { resShred: 20 } },
+        ]
+      },
+      danica: {
+        id: 'danica',
+        name: 'Danica',
+        title: 'Émissaire Stellaire',
+        element: 'Electro',
+        weapon: 'Sword',
+        rarity: 5,
+        baseHp: 12900,
+        baseAtk: 335,
+        baseDef: 810,
+        ascension: { stat: 'cr', value: 19.2 },
+        talents: {
+          na: { name: 'Lame Astrale (N1-N4)', mult: 290, scale: 'atk', type: 'NA' },
+          ca: { name: 'Fente Stellaire (AC)', mult: 310, scale: 'atk', type: 'CA' },
+          skill: { name: 'Convergence Céleste (E)', mult: 510, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Nova Électrique (Q)', mult: 880, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'danica_a1', name: 'Passif A1 : Résonance Astrale (+120 ME équipe)', team: true, stats: { em: 120 } },
+          { id: 'danica_self', name: 'État Stellaire (+35% DGT Compétence & Déchaînement)', team: false, stats: { dmg_: 35 } },
+        ]
+      },
+      sandrone: {
+        id: 'sandrone',
+        name: 'Sandrone',
+        title: 'La Marionnette — Exécutrice Fatui',
+        element: 'Geo',
+        weapon: 'Catalyst',
+        rarity: 5,
+        baseHp: 11800,
+        baseAtk: 265,
+        baseDef: 945,
+        ascension: { stat: 'geo_', value: 28.8 },
+        talents: {
+          na: { name: 'Salve Mécanique', mult: 190, scale: 'def', type: 'NA' },
+          ca: { name: 'Décharge d’Automate', mult: 280, scale: 'def', type: 'CA' },
+          skill: { name: 'Déploiement de Ruine (E)', mult: 440, scale: 'def', type: 'Skill' },
+          burst: { name: 'Protocole Cataclysme (Q)', mult: 850, scale: 'def', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'sandrone_a4', name: 'Passif A4 : Armure Mécanique (+30% DÉF & +20% DGT Géo)', team: false, stats: { def_: 30, geo_: 20 } },
+          { id: 'sandrone_shred', name: 'Matrice de Suppression (-20% RÉS ennemis)', team: true, stats: { resShred: 20 } },
+        ]
+      },
+      arlecchino: {
+        id: 'arlecchino',
+        name: 'Arlecchino',
+        title: 'Le Valet — 4e Exécutrice',
+        element: 'Pyro',
+        weapon: 'Polearm',
+        rarity: 5,
+        baseHp: 13103,
+        baseAtk: 342,
+        baseDef: 765,
+        ascension: { stat: 'cd', value: 38.4 },
+        talents: {
+          na: { name: 'Masque de la Mort Rouge (N1-N3)', mult: 465, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 245, scale: 'atk', type: 'CA' },
+          skill: { name: 'Tout n’est que cendre (E)', mult: 340, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Ascension de la Lune (Q)', mult: 680, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'arle_a4', name: 'Passif A4 : +40% Bonus DGT Pyro en combat', team: false, stats: { pyro_: 40 } },
+          { id: 'arle_bol', name: 'Engagement Vital 130% (+160% multiplicateur NA)', team: false, stats: { naDmg_: 45 } },
+        ]
+      },
+      neuvillette: {
+        id: 'neuvillette',
+        name: 'Neuvillette',
+        title: 'Iudex de Fontaine',
+        element: 'Hydro',
+        weapon: 'Catalyst',
+        rarity: 5,
+        baseHp: 14695,
+        baseAtk: 208,
+        baseDef: 576,
+        ascension: { stat: 'cd', value: 38.4 },
+        talents: {
+          na: { name: 'Attaque Normale', mult: 95, scale: 'hp', type: 'NA' },
+          ca: { name: 'Jugement Équitable (8 ticks)', mult: 116, scale: 'hp', type: 'CA' },
+          skill: { name: 'Ô larmes, je vous rendrai (E)', mult: 23.1, scale: 'hp', type: 'Skill' },
+          burst: { name: 'Ô marées, je suis revenu (Q)', mult: 40.1, scale: 'hp', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'neuvi_a1', name: 'Passif A1 (3 cumuls Draconiques) : +60% DGT AC', team: false, stats: { caDmg_: 60 } },
+          { id: 'neuvi_a4', name: 'Passif A4 : +30% Bonus DGT Hydro', team: false, stats: { hydro_: 30 } },
+        ]
+      },
+      furina: {
+        id: 'furina',
+        name: 'Furina',
+        title: 'Solitaire Éternelle',
+        element: 'Hydro',
+        weapon: 'Sword',
+        rarity: 5,
+        baseHp: 15307,
+        baseAtk: 244,
+        baseDef: 696,
+        ascension: { stat: 'cr', value: 19.2 },
+        talents: {
+          na: { name: 'Sollicitation', mult: 120, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 150, scale: 'atk', type: 'CA' },
+          skill: { name: 'Salon Solitaire (Crabaletta + membres)', mult: 42.5, scale: 'hp', type: 'Skill' },
+          burst: { name: 'Liesse Universelle (Q)', mult: 20.5, scale: 'hp', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'furina_q', name: 'Déchaînement (300 Fanfare) : +75% Bonus DGT Équipe', team: true, stats: { dmg_: 75 } },
+          { id: 'furina_a4', name: 'Passif A4 : +28% DGT Salon Solitaire', team: false, stats: { skillDmg_: 28 } },
+        ]
+      },
+      xilonen: {
+        id: 'xilonen',
+        name: 'Xilonen',
+        title: 'Forgeuse d’Âmes — Natlan',
+        element: 'Geo',
+        weapon: 'Sword',
+        rarity: 5,
+        baseHp: 12405,
+        baseAtk: 275,
+        baseDef: 930,
+        ascension: { stat: 'def_', value: 36.0 },
+        talents: {
+          na: { name: 'Frappe de Patins', mult: 180, scale: 'def', type: 'NA' },
+          ca: { name: 'Plongeon', mult: 220, scale: 'def', type: 'CA' },
+          skill: { name: 'Yohual’s Scratch (E)', mult: 322, scale: 'def', type: 'Skill' },
+          burst: { name: 'Ocelotlicue Point! (Q)', mult: 460, scale: 'def', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'xilonen_e', name: 'Échantillons Sources (-36% RÉS Élémentaire ennemis)', team: true, stats: { resShred: 36 } },
+          { id: 'xilonen_c2', name: 'C2 : Bonus Équipe (+45% ATQ / +45% PV / +60% DGT CRIT)', team: true, stats: { atk_: 45, hp_: 45 } },
+        ]
+      },
+      kazuha: {
+        id: 'kazuha',
+        name: 'Kaedehara Kazuha',
+        title: 'Vagabond Écarlate',
+        element: 'Anemo',
+        weapon: 'Sword',
+        rarity: 5,
+        baseHp: 13348,
+        baseAtk: 297,
+        baseDef: 807,
+        ascension: { stat: 'em', value: 115.2 },
+        talents: {
+          na: { name: 'Escrime de Garyuu', mult: 160, scale: 'atk', type: 'NA' },
+          ca: { name: 'Plongeon Midare Ranzan', mult: 360, scale: 'atk', type: 'CA' },
+          skill: { name: 'Chihayaburu (E)', mult: 469, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Couperet de Kazuha (Q)', mult: 472, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'kazuha_a4', name: 'Passif A4 (950 ME) : +38% Bonus DGT Élém. Équipe', team: true, stats: { dmg_: 38 } },
+        ]
+      },
+      bennett: {
+        id: 'bennett',
+        name: 'Bennett',
+        title: 'Prodige de la Malchance',
+        element: 'Pyro',
+        weapon: 'Sword',
+        rarity: 4,
+        baseHp: 12397,
+        baseAtk: 191,
+        baseDef: 771,
+        ascension: { stat: 'er', value: 26.7 },
+        talents: {
+          na: { name: 'Épée de Chance', mult: 140, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 180, scale: 'atk', type: 'CA' },
+          skill: { name: 'Surpassion (E)', mult: 247, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Merveilleux Voyage (Q)', mult: 419, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'bennett_q', name: 'Inspiration Fantastique (C1+Q) : +1050 ATQ Flat Équipe', team: true, stats: { atk: 1050 } },
+          { id: 'bennett_c6', name: 'C6 : +15% Bonus DGT Pyro Équipe', team: true, stats: { pyro_: 15 } },
+        ]
+      },
+      nahida: {
+        id: 'nahida',
+        name: 'Nahida',
+        title: 'Physique de la Pureté',
+        element: 'Dendro',
+        weapon: 'Catalyst',
+        rarity: 5,
+        baseHp: 10360,
+        baseAtk: 299,
+        baseDef: 630,
+        ascension: { stat: 'em', value: 115.2 },
+        talents: {
+          na: { name: 'Akara', mult: 110, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 210, scale: 'atk', type: 'CA' },
+          skill: { name: 'Tri-Karma Purification (E)', mult: 210, scale: 'atk', scaleEm: 420, type: 'Skill' },
+          burst: { name: 'Illusion de la Vérité (Q)', mult: 0, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'nahida_a1', name: 'Passif A1 (Sanctuaire) : +250 ME au personnage actif', team: true, stats: { em: 250 } },
+          { id: 'nahida_a4', name: 'Passif A4 (800 ME) : +60% DGT & +18% CRIT sur Tri-Karma', team: false, stats: { skillDmg_: 60, cr: 18 } },
+        ]
+      },
+      yelan: {
+        id: 'yelan',
+        name: 'Yelan',
+        title: 'Orchidée de la Vallée',
+        element: 'Hydro',
+        weapon: 'Bow',
+        rarity: 5,
+        baseHp: 14450,
+        baseAtk: 244,
+        baseDef: 548,
+        ascension: { stat: 'cr', value: 19.2 },
+        talents: {
+          na: { name: 'Archerie Furtive', mult: 110, scale: 'atk', type: 'NA' },
+          ca: { name: 'Flèche Percante', mult: 20.8, scale: 'hp', type: 'CA' },
+          skill: { name: 'Ligne de Vie (E)', mult: 40.7, scale: 'hp', type: 'Skill' },
+          burst: { name: 'Dé Exquis (3 tirs)', mult: 26.3, scale: 'hp', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'yelan_a4', name: 'Passif A4 (moyenne rotation) : +25% Bonus DGT Équipe', team: true, stats: { dmg_: 25 } },
+        ]
+      },
+      xiangling: {
+        id: 'xiangling',
+        name: 'Xiangling',
+        title: 'Cordon-bleu du Peuple',
+        element: 'Pyro',
+        weapon: 'Polearm',
+        rarity: 4,
+        baseHp: 10875,
+        baseAtk: 225,
+        baseDef: 669,
+        ascension: { stat: 'em', value: 96.0 },
+        talents: {
+          na: { name: 'Kung-fu', mult: 130, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 190, scale: 'atk', type: 'CA' },
+          skill: { name: 'Attaque de Guoba (E)', mult: 200, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Pyrotation (Q - par tour)', mult: 238, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'xl_c1', name: 'C1 : -15% RÉS Pyro ennemis', team: true, stats: { resShred: 15 } },
+          { id: 'xl_c6', name: 'C6 : +15% Bonus DGT Pyro Équipe', team: true, stats: { pyro_: 15 } },
+        ]
+      },
+      xingqiu: {
+        id: 'xingqiu',
+        name: 'Xingqiu',
+        title: 'Jeune Maître de la Guilde',
+        element: 'Hydro',
+        weapon: 'Sword',
+        rarity: 4,
+        baseHp: 10222,
+        baseAtk: 202,
+        baseDef: 758,
+        ascension: { stat: 'atk_', value: 24.0 },
+        talents: {
+          na: { name: 'Style Guhua', mult: 125, scale: 'atk', type: 'NA' },
+          ca: { name: 'Attaque Chargée', mult: 170, scale: 'atk', type: 'CA' },
+          skill: { name: 'Pluie Battante (E)', mult: 604, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Pluie d’Épées (Q - salve)', mult: 115, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'xq_a4', name: 'Passif A4 : +20% Bonus DGT Hydro', team: false, stats: { hydro_: 20 } },
+          { id: 'xq_c2', name: 'C2 : -15% RÉS Hydro ennemis', team: true, stats: { resShred: 15 } },
+        ]
+      },
+      fischl: {
+        id: 'fischl',
+        name: 'Fischl',
+        title: 'Princesse du Châtiment',
+        element: 'Electro',
+        weapon: 'Bow',
+        rarity: 4,
+        baseHp: 9189,
+        baseAtk: 244,
+        baseDef: 594,
+        ascension: { stat: 'atk_', value: 24.0 },
+        talents: {
+          na: { name: 'Flèches de la Nuit', mult: 145, scale: 'atk', type: 'NA' },
+          ca: { name: 'Tir Visé', mult: 223, scale: 'atk', type: 'CA' },
+          skill: { name: 'Ailes de Surveillance (Oz)', mult: 195, scale: 'atk', type: 'Skill' },
+          burst: { name: 'Incarnation de la Nuit (Q)', mult: 374, scale: 'atk', type: 'Burst' },
+        },
+        buffs: [
+          { id: 'fischl_a4', name: 'Passif A4 : Châtiment d’Oz (80% ATQ sur réaction)', team: false, stats: { skillDmg_: 15 } },
+        ]
+      }
+    };
+
+    const WEAPONS_DB = [
+      // Catalysts
+      { id: 'tome_eternal', name: 'Tome du Flux Éternel', type: 'Catalyst', rarity: 5, baseAtk: 542, subStat: { stat: 'cd', value: 88.2 }, passive: { hp_: 16, caDmg_: 42 } },
+      { id: 'scepter_frost', name: 'Sceptre du Givre Éternel (Sig. Tsaritsa)', type: 'Catalyst', rarity: 5, baseAtk: 674, subStat: { stat: 'cr', value: 22.1 }, passive: { atk_: 24, dmg_: 36 } },
+      { id: 'thousand_dreams', name: 'Mille Rêves Flottants', type: 'Catalyst', rarity: 5, baseAtk: 542, subStat: { stat: 'em', value: 265 }, passive: { dmg_: 30 }, teamStats: { em: 40 } },
+      { id: 'widsith', name: 'Mouvement Vagabond (R5)', type: 'Catalyst', rarity: 4, baseAtk: 510, subStat: { stat: 'cd', value: 55.1 }, passive: { dmg_: 48, em: 240 } },
+      { id: 'proto_amber', name: 'Malice (Prototype R5)', type: 'Catalyst', rarity: 4, baseAtk: 510, subStat: { stat: 'hp_', value: 41.3 }, passive: {} },
+      // Swords
+      { id: 'splendor', name: 'Splendeur des Eaux Calmes', type: 'Sword', rarity: 5, baseAtk: 542, subStat: { stat: 'cd', value: 88.2 }, passive: { skillDmg_: 24, hp_: 28 } },
+      { id: 'mistsplitter', name: 'Reflet de Tranche-Brume', type: 'Sword', rarity: 5, baseAtk: 674, subStat: { stat: 'cd', value: 44.1 }, passive: { dmg_: 40 } },
+      { id: 'freedom_sworn', name: 'Serment de la Liberté', type: 'Sword', rarity: 5, baseAtk: 608, subStat: { stat: 'em', value: 198 }, passive: { dmg_: 10 }, teamStats: { atk_: 20, naDmg_: 16 } },
+      { id: 'peak_patrol', name: 'Chant de Patrouille de Pic', type: 'Sword', rarity: 5, baseAtk: 542, subStat: { stat: 'def_', value: 82.7 }, passive: { def_: 16 }, teamStats: { dmg_: 25.6 } },
+      { id: 'aquila', name: 'Épée du Faucon', type: 'Sword', rarity: 5, baseAtk: 674, subStat: { stat: 'atk_', value: 20.0 }, passive: { atk_: 20 } },
+      { id: 'fav_sword', name: 'Épée de Favonius (R5)', type: 'Sword', rarity: 4, baseAtk: 454, subStat: { stat: 'er', value: 61.3 }, passive: {} },
+      { id: 'iron_sting', name: 'Piqûre de Fer (R5)', type: 'Sword', rarity: 4, baseAtk: 510, subStat: { stat: 'em', value: 165 }, passive: { dmg_: 24 } },
+      // Polearms
+      { id: 'crimson_moon', name: 'Semblance de la Lune Écarlate', type: 'Polearm', rarity: 5, baseAtk: 674, subStat: { stat: 'cr', value: 22.1 }, passive: { dmg_: 36 } },
+      { id: 'homa', name: 'Bâton de Homa', type: 'Polearm', rarity: 5, baseAtk: 608, subStat: { stat: 'cd', value: 66.2 }, passive: { hp_: 20, atk_: 18 } },
+      { id: 'the_catch', name: 'La Prise (R5)', type: 'Polearm', rarity: 4, baseAtk: 510, subStat: { stat: 'er', value: 45.9 }, passive: { burstDmg_: 32, cr: 12 } },
+      { id: 'deathmatch', name: 'Scion de la Victoire (R5)', type: 'Polearm', rarity: 4, baseAtk: 454, subStat: { stat: 'cr', value: 36.8 }, passive: { atk_: 32 } },
+      // Bows
+      { id: 'aqua', name: 'Simulacre d’Eau', type: 'Bow', rarity: 5, baseAtk: 542, subStat: { stat: 'cd', value: 88.2 }, passive: { hp_: 16, dmg_: 20 } },
+      { id: 'polar_star', name: 'Étoile Polaire', type: 'Bow', rarity: 5, baseAtk: 608, subStat: { stat: 'cr', value: 33.1 }, passive: { skillDmg_: 12, burstDmg_: 12, atk_: 30 } },
+      { id: 'stringless', name: 'Dernière Corde (R5)', type: 'Bow', rarity: 4, baseAtk: 510, subStat: { stat: 'em', value: 165 }, passive: { skillDmg_: 48, burstDmg_: 48 } },
+      { id: 'fav_bow', name: 'Arc de Chasse de Favonius (R5)', type: 'Bow', rarity: 4, baseAtk: 454, subStat: { stat: 'er', value: 61.3 }, passive: {} },
+    ];
+
+    const ARTIFACT_SETS = {
+      marechaussee: {
+        id: 'marechaussee',
+        name: 'Chasseur de la Maréchaussée',
+        bonus2: { naDmg_: 15, caDmg_: 15 },
+        bonus4: { cr: 36 },
+        desc: '2p: +15% DGT NA/AC | 4p: +36% Taux CRIT (3 cumuls)',
+      },
+      golden_troupe: {
+        id: 'golden_troupe',
+        name: 'Troupe Dorée',
+        bonus2: { skillDmg_: 20 },
+        bonus4: { skillDmg_: 50 },
+        desc: '2p: +20% DGT Compétence | 4p: +50% DGT Compétence (Hors-terrain)',
+      },
+      whimsy: {
+        id: 'whimsy',
+        name: 'Fragment d’Harmonie Fantaisiste',
+        bonus2: { atk_: 18 },
+        bonus4: { dmg_: 54 },
+        desc: '2p: +18% ATQ | 4p: +54% Bonus DGT (Engagement Vital)',
+      },
+      emblem: {
+        id: 'emblem',
+        name: 'Emblème du Destin Brisé',
+        bonus2: { er: 20 },
+        bonus4: { emblemScale: true }, // 25% of ER as Burst DMG%
+        desc: '2p: +20% RE | 4p: +DGT Déchaînement = 25% de la RE (max 75%)',
+      },
+      cinder_city: {
+        id: 'cinder_city',
+        name: 'Parchemin du Héros de la Cité de Cendre',
+        bonus2: {},
+        bonus4: { dmg_: 12 },
+        teamBonus4: { dmg_: 40 },
+        desc: '2p: Énergie | 4p: +40% Bonus DGT Élém. pour toute l’équipe',
+      },
+      viridescent: {
+        id: 'viridescent',
+        name: 'Ombre de la Verte Chasseuse',
+        bonus2: { anemo_: 15 },
+        bonus4: {},
+        teamBonus4: { resShred: 40 },
+        desc: '2p: +15% DGT Anémo | 4p: -40% RÉS Élémentaire ennemis (Dispersion)',
+      },
+      noblesse: {
+        id: 'noblesse',
+        name: 'Ancien Rituel Royal',
+        bonus2: { burstDmg_: 20 },
+        bonus4: {},
+        teamBonus4: { atk_: 20 },
+        desc: '2p: +20% DGT Déchaînement | 4p: +20% ATQ pour toute l’équipe',
+      },
+      blizzard: {
+        id: 'blizzard',
+        name: 'Briseur de Glace',
+        bonus2: { cryo_: 15 },
+        bonus4: { cr: 40 },
+        desc: '2p: +15% DGT Cryo | 4p: +20% à +40% Taux CRIT sur ennemis gelés/Cryo',
+      },
+      gilded: {
+        id: 'gilded',
+        name: 'Rêve Doré',
+        bonus2: { em: 80 },
+        bonus4: { em: 150, atk_: 14 },
+        desc: '2p: +80 ME | 4p: +150 ME et +14% ATQ selon l’équipe',
+      },
+      deepwood: {
+        id: 'deepwood',
+        name: 'Souvenir de Forêt',
+        bonus2: { dendro_: 15 },
+        bonus4: {},
+        teamBonus4: { resShred: 30 },
+        desc: '2p: +15% DGT Dendro | 4p: -30% RÉS Dendro ennemis',
+      },
+      husk: {
+        id: 'husk',
+        name: 'Coquille des Rêves Opulents',
+        bonus2: { def_: 30 },
+        bonus4: { def_: 24, geo_: 24 },
+        desc: '2p: +30% DÉF | 4p: +24% DÉF & +24% Bonus DGT Géo',
+      },
+    };
+
+    // =========================================================================
+    // 3. GÉNÉRATEUR D'INVENTAIRE D'ARTÉFACTS & PRESETS
+    // =========================================================================
+    const generateDemoInventory = () => {
+      const items = [
+        // Marechaussee
+        { id: 'art_1', set: 'marechaussee', slot: 'flower', main: 'hp', subs: { cr: 10.5, cd: 21.8, hp_: 9.9, er: 5.8 } },
+        { id: 'art_2', set: 'marechaussee', slot: 'plume', main: 'atk', subs: { cr: 7.4, cd: 27.2, hp_: 5.3, em: 23 } },
+        { id: 'art_3', set: 'marechaussee', slot: 'sands', main: 'hp_', subs: { cr: 11.3, cd: 19.4, er: 11.0, def: 19 } },
+        { id: 'art_4', set: 'marechaussee', slot: 'goblet', main: 'hydro_', subs: { cr: 6.6, cd: 24.9, hp_: 10.5, atk: 16 } },
+        { id: 'art_5', set: 'marechaussee', slot: 'circlet', main: 'cd', subs: { cr: 13.6, hp_: 11.1, er: 6.5, em: 40 } },
+        // Golden Troupe
+        { id: 'art_6', set: 'golden_troupe', slot: 'flower', main: 'hp', subs: { cr: 9.7, cd: 20.2, hp_: 14.0, er: 6.5 } },
+        { id: 'art_7', set: 'golden_troupe', slot: 'plume', main: 'atk', subs: { cr: 10.9, cd: 18.7, er: 11.7, hp: 299 } },
+        { id: 'art_8', set: 'golden_troupe', slot: 'sands', main: 'hp_', subs: { cr: 8.2, cd: 22.5, er: 12.3, em: 21 } },
+        { id: 'art_9', set: 'golden_troupe', slot: 'goblet', main: 'hp_', subs: { cr: 10.1, cd: 21.0, er: 10.4, def_: 7.3 } },
+        { id: 'art_10', set: 'golden_troupe', slot: 'circlet', main: 'cr', subs: { cd: 26.4, hp_: 9.3, er: 5.8, atk_: 4.7 } },
+        // Whimsy
+        { id: 'art_11', set: 'whimsy', slot: 'flower', main: 'hp', subs: { cr: 11.7, cd: 19.4, atk_: 9.9, em: 23 } },
+        { id: 'art_12', set: 'whimsy', slot: 'plume', main: 'atk', subs: { cr: 8.9, cd: 24.1, atk_: 8.2, er: 5.2 } },
+        { id: 'art_13', set: 'whimsy', slot: 'sands', main: 'atk_', subs: { cr: 10.5, cd: 21.0, em: 42, hp: 269 } },
+        { id: 'art_14', set: 'whimsy', slot: 'goblet', main: 'pyro_', subs: { cr: 7.8, cd: 23.3, atk_: 9.3, em: 19 } },
+        { id: 'art_15', set: 'whimsy', slot: 'circlet', main: 'cd', subs: { cr: 14.4, atk_: 10.5, em: 37, def: 21 } },
+        // Blizzard / Cryo Tsaritsa
+        { id: 'art_16', set: 'blizzard', slot: 'flower', main: 'hp', subs: { cr: 7.0, cd: 28.0, atk_: 11.1, er: 6.5 } },
+        { id: 'art_17', set: 'blizzard', slot: 'plume', main: 'atk', subs: { cr: 6.6, cd: 26.4, atk_: 9.9, er: 11.0 } },
+        { id: 'art_18', set: 'blizzard', slot: 'sands', main: 'atk_', subs: { cr: 7.4, cd: 24.9, er: 11.7, em: 23 } },
+        { id: 'art_19', set: 'blizzard', slot: 'goblet', main: 'cryo_', subs: { cr: 8.2, cd: 21.8, atk_: 10.5, er: 5.8 } },
+        { id: 'art_20', set: 'blizzard', slot: 'circlet', main: 'cd', subs: { cr: 12.1, atk_: 14.6, er: 10.4, hp: 239 } },
+        // Cinder City (Xilonen)
+        { id: 'art_21', set: 'cinder_city', slot: 'flower', main: 'hp', subs: { er: 16.8, def_: 13.1, cr: 7.0, cd: 14.0 } },
+        { id: 'art_22', set: 'cinder_city', slot: 'plume', main: 'atk', subs: { er: 18.1, def_: 12.4, cr: 6.6, cd: 13.2 } },
+        { id: 'art_23', set: 'cinder_city', slot: 'sands', main: 'er', subs: { def_: 19.0, cr: 9.7, cd: 14.8, hp: 299 } },
+        { id: 'art_24', set: 'cinder_city', slot: 'goblet', main: 'def_', subs: { er: 15.5, cr: 8.6, cd: 15.5, hp_: 5.3 } },
+        { id: 'art_25', set: 'cinder_city', slot: 'circlet', main: 'cr', subs: { er: 16.2, def_: 14.6, cd: 14.0, atk: 18 } },
+        // Viridescent (Kazuha)
+        { id: 'art_26', set: 'viridescent', slot: 'flower', main: 'hp', subs: { em: 84, er: 11.7, cr: 3.9, atk_: 5.3 } },
+        { id: 'art_27', set: 'viridescent', slot: 'plume', main: 'atk', subs: { em: 91, er: 10.4, cd: 7.8, def: 19 } },
+        { id: 'art_28', set: 'viridescent', slot: 'sands', main: 'em', subs: { er: 17.5, cr: 6.2, cd: 13.2, atk_: 4.7 } },
+        { id: 'art_29', set: 'viridescent', slot: 'goblet', main: 'em', subs: { er: 16.2, cr: 7.0, atk_: 8.2, hp: 269 } },
+        { id: 'art_30', set: 'viridescent', slot: 'circlet', main: 'em', subs: { er: 18.1, cr: 6.6, cd: 14.0, def_: 6.6 } },
+        // Emblem (Xiangling / Yelan)
+        { id: 'art_31', set: 'emblem', slot: 'flower', main: 'hp', subs: { cr: 10.1, cd: 20.2, er: 11.0, em: 21 } },
+        { id: 'art_32', set: 'emblem', slot: 'plume', main: 'atk', subs: { cr: 9.3, cd: 21.8, er: 11.7, atk_: 5.8 } },
+        { id: 'art_33', set: 'emblem', slot: 'sands', main: 'er', subs: { cr: 10.5, cd: 19.4, em: 40, atk_: 5.3 } },
+        { id: 'art_34', set: 'emblem', slot: 'goblet', main: 'pyro_', subs: { cr: 8.9, cd: 21.0, er: 10.4, em: 23 } },
+        { id: 'art_35', set: 'emblem', slot: 'circlet', main: 'cr', subs: { cd: 24.9, er: 11.0, em: 37, atk_: 4.7 } },
+        // Noblesse (Bennett)
+        { id: 'art_36', set: 'noblesse', slot: 'flower', main: 'hp', subs: { er: 18.1, hp_: 11.1, cr: 6.2, cd: 12.4 } },
+        { id: 'art_37', set: 'noblesse', slot: 'plume', main: 'atk', subs: { er: 19.4, hp_: 9.9, cr: 5.8, cd: 13.2 } },
+        { id: 'art_38', set: 'noblesse', slot: 'sands', main: 'er', subs: { hp_: 15.2, cr: 7.4, cd: 14.0, def: 21 } },
+        { id: 'art_39', set: 'noblesse', slot: 'goblet', main: 'hp_', subs: { er: 16.8, cr: 6.6, cd: 13.2, atk: 19 } },
+        { id: 'art_40', set: 'noblesse', slot: 'circlet', main: 'hp_', subs: { er: 17.5, cr: 7.8, cd: 14.8, em: 21 } },
+        // Husk (Sandrone)
+        { id: 'art_41', set: 'husk', slot: 'flower', main: 'hp', subs: { cr: 10.5, cd: 21.0, def_: 12.4, er: 5.8 } },
+        { id: 'art_42', set: 'husk', slot: 'plume', main: 'atk', subs: { cr: 9.7, cd: 22.5, def_: 11.7, er: 6.5 } },
+        { id: 'art_43', set: 'husk', slot: 'sands', main: 'def_', subs: { cr: 11.3, cd: 19.4, er: 11.0, hp: 239 } },
+        { id: 'art_44', set: 'husk', slot: 'goblet', main: 'geo_', subs: { cr: 8.2, cd: 23.3, def_: 13.1, er: 5.2 } },
+        { id: 'art_45', set: 'husk', slot: 'circlet', main: 'cr', subs: { cd: 25.6, def_: 12.4, er: 6.5, atk_: 4.7 } },
+      ];
+      return items;
+    };
+
+    const INITIAL_TEAM = [
+      {
+        charId: 'tsaritsa',
+        level: 90,
+        constellation: 0,
+        weaponId: 'scepter_frost',
+        equipped: { flower: 'art_16', plume: 'art_17', sands: 'art_18', goblet: 'art_19', circlet: 'art_20' },
+        activeBuffs: { tsaritsa_a4: true, tsaritsa_c2: false }
+      },
+      {
+        charId: 'furina',
+        level: 90,
+        constellation: 0,
+        weaponId: 'splendor',
+        equipped: { flower: 'art_6', plume: 'art_7', sands: 'art_8', goblet: 'art_9', circlet: 'art_10' },
+        activeBuffs: { furina_q: true, furina_a4: true }
+      },
+      {
+        charId: 'xilonen',
+        level: 90,
+        constellation: 0,
+        weaponId: 'peak_patrol',
+        equipped: { flower: 'art_21', plume: 'art_22', sands: 'art_23', goblet: 'art_24', circlet: 'art_25' },
+        activeBuffs: { xilonen_e: true, xilonen_c2: false }
+      },
+      {
+        charId: 'kazuha',
+        level: 90,
+        constellation: 0,
+        weaponId: 'freedom_sworn',
+        equipped: { flower: 'art_26', plume: 'art_27', sands: 'art_28', goblet: 'art_29', circlet: 'art_30' },
+        activeBuffs: { kazuha_a4: true }
+      }
+    ];
+
+    const INITIAL_ROTATION = [
+      { id: 'rot_1', slotIdx: 1, talentKey: 'skill', label: 'Salon Solitaire (12 hits)', hits: 12, reaction: 'none' },
+      { id: 'rot_2', slotIdx: 1, talentKey: 'burst', label: 'Liesse Universelle (Q)', hits: 1, reaction: 'none' },
+      { id: 'rot_3', slotIdx: 2, talentKey: 'skill', label: 'Yohual’s Scratch (E + 2NA)', hits: 2, reaction: 'none' },
+      { id: 'rot_4', slotIdx: 3, talentKey: 'skill', label: 'Chihayaburu + Plongeon', hits: 2, reaction: 'none' },
+      { id: 'rot_5', slotIdx: 3, talentKey: 'burst', label: 'Couperet de Kazuha (Q)', hits: 5, reaction: 'none' },
+      { id: 'rot_6', slotIdx: 0, talentKey: 'skill', label: 'Édit du Givre Éternel (E)', hits: 2, reaction: 'none' },
+      { id: 'rot_7', slotIdx: 0, talentKey: 'burst', label: 'Règne de l’Hiver Absolu (Q)', hits: 1, reaction: 'none' },
+      { id: 'rot_8', slotIdx: 0, talentKey: 'ca', label: 'Jugement Boréal (5x AC)', hits: 5, reaction: 'none' },
+    ];
+
+    // =========================================================================
+    // 4. MOTEUR MATHÉMATIQUE DE THEORYCRAFTING GENSHIN IMPACT
+    // =========================================================================
+    function getSetCounts(equippedIds, inventoryMap) {
+      const counts = {};
+      Object.values(equippedIds).forEach(artId => {
+        const art = inventoryMap[artId];
+        if (art && art.set) {
+          counts[art.set] = (counts[art.set] || 0) + 1;
+        }
+      });
+      return counts;
+    }
+
+    function computeResonances(team) {
+      const elems = team.map(m => CHARACTERS_DB[m.charId]?.element).filter(Boolean);
+      const counts = {};
+      elems.forEach(e => counts[e] = (counts[e] || 0) + 1);
+      const uniqueCount = Object.keys(counts).length;
+
+      const active = [];
+      const teamStats = {};
+
+      if (counts.Pyro >= 2) {
+        active.push({ name: 'Résonance Pyro (Flamme)', desc: '+25% ATQ' });
+        teamStats.atk_ = (teamStats.atk_ || 0) + 25;
+      }
+      if (counts.Hydro >= 2) {
+        active.push({ name: 'Résonance Hydro (Eau)', desc: '+25% PV Max' });
+        teamStats.hp_ = (teamStats.hp_ || 0) + 25;
+      }
+      if (counts.Cryo >= 2) {
+        active.push({ name: 'Résonance Cryo (Glace)', desc: '+15% Taux CRIT' });
+        teamStats.cr = (teamStats.cr || 0) + 15;
+      }
+      if (counts.Dendro >= 2) {
+        active.push({ name: 'Résonance Dendro (Plante)', desc: '+80 Maîtrise Élémentaire' });
+        teamStats.em = (teamStats.em || 0) + 80;
+      }
+      if (counts.Geo >= 2) {
+        active.push({ name: 'Résonance Géo (Roche)', desc: '+15% Bonus DGT & -20% RÉS Géo' });
+        teamStats.dmg_ = (teamStats.dmg_ || 0) + 15;
+        teamStats.resShred = (teamStats.resShred || 0) + 20;
+      }
+      if (counts.Anemo >= 2) {
+        active.push({ name: 'Résonance Anémo (Vent)', desc: '-5% Temps de recharge' });
+      }
+      if (counts.Electro >= 2) {
+        active.push({ name: 'Résonance Électro (Tonnerre)', desc: 'Particules Électro bonus' });
+      }
+      if (uniqueCount === 4) {
+        active.push({ name: 'Canopée Protectrice (4 élém.)', desc: '+15% RÉS Élém. & Physique' });
+      }
+
+      return { active, teamStats };
+    }
+
+    function computeTeamBuffs(team, inventoryMap) {
+      const { active: resonances, teamStats: resStats } = computeResonances(team);
+      const globalBuffs = { ...resStats };
+      const activeBuffList = [...resonances];
+
+      team.forEach((member) => {
+        const char = CHARACTERS_DB[member.charId];
+        const weapon = WEAPONS_DB.find(w => w.id === member.weaponId);
+        if (!char) return;
+
+        // Character team buffs
+        char.buffs.forEach(b => {
+          if (b.team && member.activeBuffs?.[b.id]) {
+            activeBuffList.push({ name: `${char.name} — ${b.name.split(':')[0]}`, desc: b.name.split(':')[1] || '' });
+            Object.entries(b.stats).forEach(([k, v]) => {
+              globalBuffs[k] = (globalBuffs[k] || 0) + v;
+            });
+          }
+        });
+
+        // Weapon team buffs
+        if (weapon && weapon.teamStats) {
+          activeBuffList.push({ name: `${weapon.name}`, desc: Object.entries(weapon.teamStats).map(([k, v]) => `+${v} ${STAT_LABELS[k] || k}`).join(', ') });
+          Object.entries(weapon.teamStats).forEach(([k, v]) => {
+            globalBuffs[k] = (globalBuffs[k] || 0) + v;
+          });
+        }
+
+        // Artifact 4pc team buffs
+        const setCounts = getSetCounts(member.equipped, inventoryMap);
+        Object.entries(setCounts).forEach(([setId, count]) => {
+          if (count >= 4 && ARTIFACT_SETS[setId]?.teamBonus4) {
+            const setObj = ARTIFACT_SETS[setId];
+            activeBuffList.push({ name: `Set 4p ${setObj.name}`, desc: setObj.desc.split('|')[1] || setObj.desc });
+            Object.entries(setObj.teamBonus4).forEach(([k, v]) => {
+              globalBuffs[k] = (globalBuffs[k] || 0) + v;
+            });
+          }
+        });
+      });
+
+      return { globalBuffs, activeBuffList };
+    }
+
+    function calculateCharacterStats(member, inventoryMap, globalBuffs, customEquipped = null) {
+      const char = CHARACTERS_DB[member.charId];
+      const weapon = WEAPONS_DB.find(w => w.id === member.weaponId) || WEAPONS_DB[0];
+      const equipped = customEquipped || member.equipped;
+
+      const baseHp = char.baseHp;
+      const baseAtk = char.baseAtk + weapon.baseAtk;
+      const baseDef = char.baseDef;
+
+      const bonus = {
+        hp: 0, hp_: 0,
+        atk: 0, atk_: 0,
+        def: 0, def_: 0,
+        em: 0,
+        er: 100,
+        cr: 5.0,
+        cd: 50.0,
+        dmg_: 0,
+        naDmg_: 0, caDmg_: 0, skillDmg_: 0, burstDmg_: 0,
+        pyro_: 0, hydro_: 0, cryo_: 0, electro_: 0, dendro_: 0, anemo_: 0, geo_: 0,
+      };
+
+      // Ascension stat
+      if (char.ascension) {
+        bonus[char.ascension.stat] = (bonus[char.ascension.stat] || 0) + char.ascension.value;
+      }
+
+      // Weapon substat & personal passive
+      if (weapon.subStat) {
+        bonus[weapon.subStat.stat] = (bonus[weapon.subStat.stat] || 0) + weapon.subStat.value;
+      }
+      if (weapon.passive) {
+        Object.entries(weapon.passive).forEach(([k, v]) => {
+          bonus[k] = (bonus[k] || 0) + v;
+        });
+      }
+
+      // Character personal buffs
+      char.buffs.forEach(b => {
+        if (!b.team && member.activeBuffs?.[b.id]) {
+          Object.entries(b.stats).forEach(([k, v]) => {
+            bonus[k] = (bonus[k] || 0) + v;
+          });
+        }
+      });
+
+      // Global Team Buffs
+      Object.entries(globalBuffs).forEach(([k, v]) => {
+        if (k !== 'resShred' && k !== 'defShred') {
+          bonus[k] = (bonus[k] || 0) + v;
+        }
+      });
+
+      // Equipped Artifacts Stats
+      Object.values(equipped).forEach(artId => {
+        const art = inventoryMap[artId];
+        if (!art) return;
+        const mainVal = MAIN_STAT_VALUES[art.main] || 0;
+        bonus[art.main] = (bonus[art.main] || 0) + mainVal;
+        if (art.subs) {
+          Object.entries(art.subs).forEach(([sKey, sVal]) => {
+            bonus[sKey] = (bonus[sKey] || 0) + (parseFloat(sVal) || 0);
+          });
+        }
+      });
+
+      // Artifact Set Bonuses
+      const setCounts = getSetCounts(equipped, inventoryMap);
+      let hasEmblem4 = false;
+      Object.entries(setCounts).forEach(([setId, count]) => {
+        const setObj = ARTIFACT_SETS[setId];
+        if (!setObj) return;
+        if (count >= 2 && setObj.bonus2) {
+          Object.entries(setObj.bonus2).forEach(([k, v]) => bonus[k] = (bonus[k] || 0) + v);
+        }
+        if (count >= 4 && setObj.bonus4) {
+          if (setObj.bonus4.emblemScale) hasEmblem4 = true;
+          Object.entries(setObj.bonus4).forEach(([k, v]) => {
+            if (k !== 'emblemScale') bonus[k] = (bonus[k] || 0) + v;
+          });
+        }
+      });
+
+      if (hasEmblem4) {
+        const emblemBonus = Math.min(75, bonus.er * 0.25);
+        bonus.burstDmg_ += emblemBonus;
+      }
+
+      const totalHp = baseHp * (1 + bonus.hp_ / 100) + bonus.hp;
+      const totalAtk = baseAtk * (1 + bonus.atk_ / 100) + bonus.atk;
+      const totalDef = baseDef * (1 + bonus.def_ / 100) + bonus.def;
+      const effectiveCr = Math.min(100, Math.max(0, bonus.cr));
+      const elemKey = `${char.element.toLowerCase()}_`;
+      const elemDmg = (bonus[elemKey] || 0) + bonus.dmg_;
+
+      return {
+        baseHp, baseAtk, baseDef,
+        totalHp, totalAtk, totalDef,
+        em: bonus.em,
+        er: bonus.er,
+        cr: effectiveCr,
+        rawCr: bonus.cr,
+        cd: bonus.cd,
+        elemDmg,
+        naDmg_: bonus.naDmg_,
+        caDmg_: bonus.caDmg_,
+        skillDmg_: bonus.skillDmg_,
+        burstDmg_: bonus.burstDmg_,
+        setCounts
+      };
+    }
+
+    function calculateHitDamage(char, stats, talentKey, reaction, enemyConfig, globalBuffs) {
+      const talent = char.talents[talentKey];
+      if (!talent) return { nonCrit: 0, crit: 0, avg: 0 };
+
+      // 1. Base Damage (Scaling Stat * Multiplier)
+      let scalingStatVal = stats.totalAtk;
+      if (talent.scale === 'hp') scalingStatVal = stats.totalHp;
+      if (talent.scale === 'def') scalingStatVal = stats.totalDef;
+
+      let baseDmg = scalingStatVal * (talent.mult / 100);
+      if (talent.scaleEm) {
+        baseDmg += stats.em * (talent.scaleEm / 100);
+      }
+
+      // Additive Reaction (Aggravate / Spread)
+      if (reaction === 'aggravate' || reaction === 'spread') {
+        const levelMult = 1446.85; // Lv 90 base reaction
+        const reactMult = reaction === 'spread' ? 1.25 : 1.15;
+        const emBonus = (5 * stats.em) / (stats.em + 1200);
+        baseDmg += levelMult * reactMult * (1 + emBonus);
+      }
+
+      // 2. DMG Bonus %
+      let specificDmg = 0;
+      if (talent.type === 'NA') specificDmg = stats.naDmg_;
+      if (talent.type === 'CA') specificDmg = stats.caDmg_;
+      if (talent.type === 'Skill') specificDmg = stats.skillDmg_;
+      if (talent.type === 'Burst') specificDmg = stats.burstDmg_;
+
+      const dmgBonusMult = 1 + (stats.elemDmg + specificDmg) / 100;
+
+      // 3. Amplifying Reaction Multiplier (Vaporize / Melt)
+      let ampMult = 1.0;
+      if (reaction === 'vape_15' || reaction === 'melt_15') {
+        const emBonus = (2.78 * stats.em) / (stats.em + 1400);
+        ampMult = 1.5 * (1 + emBonus);
+      } else if (reaction === 'vape_20' || reaction === 'melt_20') {
+        const emBonus = (2.78 * stats.em) / (stats.em + 1400);
+        ampMult = 2.0 * (1 + emBonus);
+      }
+
+      // 4. Enemy DEF Multiplier
+      const charLv = 90;
+      const enemyLv = enemyConfig.level || 90;
+      const defShred = (enemyConfig.defShred || 0) + (globalBuffs.defShred || 0);
+      const defMult = (charLv + 100) / ((charLv + 100) + (enemyLv + 100) * (1 - defShred / 100));
+
+      // 5. Enemy RES Multiplier
+      const baseRes = (enemyConfig.baseRes ?? 10) / 100;
+      const shred = (globalBuffs.resShred || 0) / 100;
+      const effRes = baseRes - shred;
+      let resMult = 1 - effRes;
+      if (effRes < 0) {
+        resMult = 1 - (effRes / 2);
+      } else if (effRes >= 0.75) {
+        resMult = 1 / (4 * effRes + 1);
+      }
+
+      const nonCrit = baseDmg * dmgBonusMult * ampMult * defMult * resMult;
+      const crit = nonCrit * (1 + stats.cd / 100);
+      const crProb = stats.cr / 100;
+      const avg = nonCrit * (1 - crProb) + crit * crProb;
+
+      return { nonCrit, crit, avg };
+    }
+
+    // =========================================================================
+    // 5. COMPOSANTS D'INTERFACE UTILISATEUR
+    // =========================================================================
+    const formatNum = (n) => Math.round(n).toLocaleString('fr-FR');
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('team');
+      
+      // Persistent State via localStorage
+      const [inventory, setInventory] = useState(() => {
+        try {
+          const saved = localStorage.getItem('stellar_tc_inv_v1');
+          return saved ? JSON.parse(saved) : generateDemoInventory();
+        } catch { return generateDemoInventory(); }
+      });
+
+      const [team, setTeam] = useState(() => {
+        try {
+          const saved = localStorage.getItem('stellar_tc_team_v1');
+          return saved ? JSON.parse(saved) : INITIAL_TEAM;
+        } catch { return INITIAL_TEAM; }
+      });
+
+      const [rotation, setRotation] = useState(() => {
+        try {
+          const saved = localStorage.getItem('stellar_tc_rot_v1');
+          return saved ? JSON.parse(saved) : INITIAL_ROTATION;
+        } catch { return INITIAL_ROTATION; }
+      });
+
+      const [rotationDuration, setRotationDuration] = useState(20);
+      const [enemyConfig, setEnemyConfig] = useState({ level: 100, baseRes: 10, defShred: 0 });
+      const [selectedSlotIdx, setSelectedSlotIdx] = useState(0);
+      const [toastMsg, setToastMsg] = useState(null);
+
+      // Comparator States
+      const [compA, setCompA] = useState(null);
+      const [compB, setCompB] = useState(null);
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('stellar_tc_inv_v1', JSON.stringify(inventory));
+          localStorage.setItem('stellar_tc_team_v1', JSON.stringify(team));
+          localStorage.setItem('stellar_tc_rot_v1', JSON.stringify(rotation));
+        } catch (e) {}
+      }, [inventory, team, rotation]);
+
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3200);
+      };
+
+      const inventoryMap = useMemo(() => {
+        const map = {};
+        inventory.forEach(a => map[a.id] = a);
+        return map;
+      }, [inventory]);
+
+      // Team Buffs & Calculated Stats for all 4 slots
+      const { globalBuffs, activeBuffList } = useMemo(() => computeTeamBuffs(team, inventoryMap), [team, inventoryMap]);
+
+      const teamStats = useMemo(() => {
+        return team.map(member => calculateCharacterStats(member, inventoryMap, globalBuffs));
+      }, [team, inventoryMap, globalBuffs]);
+
+      // Full Rotation Simulation Results
+      const simulationResults = useMemo(() => {
+        let totalDamage = 0;
+        const charDamages = [0, 0, 0, 0];
+
+        const rows = rotation.map(step => {
+          const member = team[step.slotIdx];
+          if (!member) return { ...step, nonCrit: 0, crit: 0, avgPerHit: 0, totalStepDmg: 0 };
+          const char = CHARACTERS_DB[member.charId];
+          const stats = teamStats[step.slotIdx];
+          const dmg = calculateHitDamage(char, stats, step.talentKey, step.reaction, enemyConfig, globalBuffs);
+          const totalStepDmg = dmg.avg * (step.hits || 1);
+          totalDamage += totalStepDmg;
+          charDamages[step.slotIdx] += totalStepDmg;
+          return {
+            ...step,
+            char,
+            nonCrit: dmg.nonCrit,
+            crit: dmg.crit,
+            avgPerHit: dmg.avg,
+            totalStepDmg
+          };
+        });
+
+        const dps = rotationDuration > 0 ? totalDamage / rotationDuration : 0;
+        return { rows, totalDamage, dps, charDamages };
+      }, [rotation, team, teamStats, enemyConfig, globalBuffs, rotationDuration]);
+
+      // Handlers
+      const updateTeamMember = (idx, updates) => {
+        setTeam(prev => prev.map((m, i) => i === idx ? { ...m, ...updates } : m));
+      };
+
+      const handleCharacterChange = (idx, newCharId) => {
+        const newChar = CHARACTERS_DB[newCharId];
+        const compatibleWeapons = WEAPONS_DB.filter(w => w.type === newChar.weapon);
+        const defaultBuffs = {};
+        newChar.buffs.forEach(b => defaultBuffs[b.id] = true);
+        updateTeamMember(idx, {
+          charId: newCharId,
+          weaponId: compatibleWeapons[0]?.id || WEAPONS_DB[0].id,
+          activeBuffs: defaultBuffs
+        });
+      };
+
+      const saveSnapshot = (slot) => {
+        const snap = {
+          label: team.map(m => CHARACTERS_DB[m.charId]?.name).join(' / '),
+          timestamp: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          totalDamage: simulationResults.totalDamage,
+          dps: simulationResults.dps,
+          duration: rotationDuration,
+          members: team.map((m, i) => ({
+            char: CHARACTERS_DB[m.charId],
+            weapon: WEAPONS_DB.find(w => w.id === m.weaponId),
+            stats: teamStats[i],
+            damage: simulationResults.charDamages[i],
+            share: simulationResults.totalDamage > 0 ? (simulationResults.charDamages[i] / simulationResults.totalDamage) * 100 : 0
+          }))
+        };
+        if (slot === 'A') setCompA(snap);
+        else setCompB(snap);
+        showToast(`Configuration enregistrée dans le emplacement ${slot} !`);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* Top Navigation Bar */}
+          <header className="sticky top-0 z-40 bg-void/90 backdrop-blur-md border-b border-borderSubtle">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500/20 to-sky-500/20 border border-amber-500/40 flex items-center justify-center shadow-lg shadow-amber-500/10">
+                  <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" />
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="font-display font-bold text-base sm:text-lg tracking-wide text-slate-100">
+                    STELLAR <span className="text-amber-400">THEORYCRAFT</span>
+                  </h1>
+                  <p className="text-[11px] text-slate-400 hidden sm:block">Simulateur d'Équipe & Optimiseur d'Artéfacts Genshin Impact</p>
+                </div>
+              </div>
+
+              {/* Navigation Tabs */}
+              <nav className="flex items-center gap-1 sm:gap-2 bg-card p-1 rounded-xl border border-borderSubtle overflow-x-auto">
+                {[
+                  { id: 'team', label: 'Équipe & Rotation' },
+                  { id: 'optimizer', label: 'Optimiseur' },
+                  { id: 'inventory', label: `Inventaire (${inventory.length})` },
+                  { id: 'comparator', label: 'Comparateur' },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-cardHover'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Quick DPS Pill */}
+              <div className="hidden lg:flex items-center gap-3 bg-card px-3.5 py-1.5 rounded-xl border border-borderSubtle">
+                <div className="text-right">
+                  <div className="text-[10px] uppercase tracking-wider text-slate-400">DPS Équipe</div>
+                  <div className="font-mono font-bold text-sm text-amber-400">{formatNum(simulationResults.dps)} /s</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Toast Notification */}
+          {toastMsg && (
+            <div className="fixed bottom-5 right-5 z-50 bg-slate-900 border border-amber-500/50 text-amber-200 px-4 py-2.5 rounded-xl shadow-2xl text-sm flex items-center gap-2 animate-bounce">
+              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+              {toastMsg}
+            </div>
+          )}
+
+          {/* Main Content Area */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+            {activeTab === 'team' && (
+              <TeamAndRotationTab
+                team={team}
+                teamStats={teamStats}
+                selectedSlotIdx={selectedSlotIdx}
+                setSelectedSlotIdx={setSelectedSlotIdx}
+                onCharacterChange={handleCharacterChange}
+                updateTeamMember={updateTeamMember}
+                inventory={inventory}
+                inventoryMap={inventoryMap}
+                globalBuffs={globalBuffs}
+                activeBuffList={activeBuffList}
+                enemyConfig={enemyConfig}
+                setEnemyConfig={setEnemyConfig}
+                rotation={rotation}
+                setRotation={setRotation}
+                rotationDuration={rotationDuration}
+                setRotationDuration={setRotationDuration}
+                simulationResults={simulationResults}
+                saveSnapshot={saveSnapshot}
+              />
+            )}
+
+            {activeTab === 'optimizer' && (
+              <OptimizerTab
+                team={team}
+                selectedSlotIdx={selectedSlotIdx}
+                setSelectedSlotIdx={setSelectedSlotIdx}
+                inventory={inventory}
+                inventoryMap={inventoryMap}
+                globalBuffs={globalBuffs}
+                enemyConfig={enemyConfig}
+                rotation={rotation}
+                rotationDuration={rotationDuration}
+                updateTeamMember={updateTeamMember}
+                showToast={showToast}
+                setActiveTab={setActiveTab}
+              />
+            )}
+
+            {activeTab === 'inventory' && (
+              <InventoryTab
+                inventory={inventory}
+                setInventory={setInventory}
+                team={team}
+                setTeam={setTeam}
+                rotation={rotation}
+                setRotation={setRotation}
+                showToast={showToast}
+              />
+            )}
+
+            {activeTab === 'comparator' && (
+              <ComparatorTab
+                compA={compA}
+                compB={compB}
+                saveSnapshot={saveSnapshot}
+                simulationResults={simulationResults}
+              />
+            )}
+          </main>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // TAB 1 : ÉQUIPE, BUFFS, ENNEMI & ROTATION (FEUILLE DE CALCUL)
+    // =========================================================================
+    function TeamAndRotationTab({
+      team, teamStats, selectedSlotIdx, setSelectedSlotIdx,
+      onCharacterChange, updateTeamMember, inventory, inventoryMap,
+      globalBuffs, activeBuffList, enemyConfig, setEnemyConfig,
+      rotation, setRotation, rotationDuration, setRotationDuration,
+      simulationResults, saveSnapshot
+    }) {
+      const activeMember = team[selectedSlotIdx];
+      const activeChar = CHARACTERS_DB[activeMember.charId];
+      const activeStats = teamStats[selectedSlotIdx];
+      const compatibleWeapons = WEAPONS_DB.filter(w => w.type === activeChar.weapon);
+
+      const addRotationStep = () => {
+        const defaultChar = CHARACTERS_DB[team[0].charId];
+        setRotation(prev => [
+          ...prev,
+          {
+            id: `rot_${Date.now()}`,
+            slotIdx: 0,
+            talentKey: 'skill',
+            label: `${defaultChar.name} — Compétence (E)`,
+            hits: 1,
+            reaction: 'none'
+          }
+        ]);
+      };
+
+      const updateRotationStep = (id, field, val) => {
+        setRotation(prev => prev.map(step => {
+          if (step.id !== id) return step;
+          const updated = { ...step, [field]: val };
+          if (field === 'slotIdx' || field === 'talentKey') {
+            const c = CHARACTERS_DB[team[updated.slotIdx]?.charId];
+            if (c && c.talents[updated.talentKey]) {
+              updated.label = c.talents[updated.talentKey].name;
+            }
+          }
+          return updated;
+        }));
+      };
+
+      const removeRotationStep = (id) => {
+        setRotation(prev => prev.filter(s => s.id !== id));
+      };
+
+      return (
+        <div className="space-y-6">
+          {/* 4 Team Character Cards */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {team.map((member, idx) => {
+              const char = CHARACTERS_DB[member.charId];
+              const el = ELEMENTS[char.element];
+              const isSelected = selectedSlotIdx === idx;
+              const charDmg = simulationResults.charDamages[idx];
+              const dmgShare = simulationResults.totalDamage > 0 ? (charDmg / simulationResults.totalDamage) * 100 : 0;
+
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setSelectedSlotIdx(idx)}
+                  className={`cursor-pointer rounded-2xl p-4 transition-all border relative overflow-hidden ${
+                    isSelected
+                      ? 'bg-cardHover border-amber-400/70 shadow-lg shadow-amber-500/10'
+                      : 'bg-card border-borderSubtle hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-11 h-11 rounded-xl flex items-center justify-center font-display font-bold text-lg shadow-inner"
+                        style={{ background: el.bg, border: `1px solid ${el.border}`, color: el.color }}
+                      >
+                        {char.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-slate-100 text-sm">{char.name}</span>
+                          <ElementIcon element={char.element} size={14} />
+                        </div>
+                        <div className="text-xs text-slate-400">Nv. 90 • C{member.constellation}</div>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-void border border-borderSubtle text-slate-300">
+                      Slot {idx + 1}
+                    </span>
+                  </div>
+
+                  {/* Mini Stat Bar */}
+                  <div className="grid grid-cols-3 gap-1.5 text-center bg-void/70 p-2 rounded-xl border border-borderSubtle/60 text-xs mb-3">
+                    <div>
+                      <div className="text-[10px] text-slate-400">CRIT</div>
+                      <div className="font-mono text-slate-200">{teamStats[idx].cr.toFixed(1)}% / {teamStats[idx].cd.toFixed(0)}%</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-400">RE %</div>
+                      <div className="font-mono text-sky-300">{teamStats[idx].er.toFixed(0)}%</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-slate-400">Part DPS</div>
+                      <div className="font-mono text-amber-400 font-semibold">{dmgShare.toFixed(1)}%</div>
+                    </div>
+                  </div>
+
+                  {/* Contribution Progress Bar */}
+                  <div className="w-full h-1.5 bg-void rounded-full overflow-hidden">
+                    <div
+                      className="h-full transition-all duration-300"
+                      style={{ width: `${dmgShare}%`, backgroundColor: el.color }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+
+          {/* Character Detailed Configuration & Stats Panel */}
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left: Character & Gear Selector (7 cols) */}
+            <div className="lg:col-span-7 bg-card rounded-2xl border border-borderSubtle p-5 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-borderSubtle pb-4">
+                <div className="flex items-center gap-2.5">
+                  <ElementIcon element={activeChar.element} size={20} />
+                  <h2 className="font-semibold text-base text-slate-100">
+                    Configuration — Slot {selectedSlotIdx + 1} ({activeChar.name})
+                  </h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={activeMember.charId}
+                    onChange={(e) => handleCharacterChange(selectedSlotIdx, e.target.value)}
+                    className="bg-void border border-borderSubtle rounded-lg px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-amber-400"
+                  >
+                    {Object.values(CHARACTERS_DB).map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.element})</option>
+                    ))}
+                  </select>
+                  <select
+                    value={activeMember.constellation}
+                    onChange={(e) => updateTeamMember(selectedSlotIdx, { constellation: Number(e.target.value) })}
+                    className="bg-void border border-borderSubtle rounded-lg px-2.5 py-1.5 text-sm text-slate-200"
+                  >
+                    {[0, 1, 2, 3, 4, 5, 6].map(c => (
+                      <option key={c} value={c}>C{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Weapon Selection */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5">
+                  Arme ({activeChar.weapon})
+                </label>
+                <select
+                  value={activeMember.weaponId}
+                  onChange={(e) => updateTeamMember(selectedSlotIdx, { weaponId: e.target.value })}
+                  className="w-full bg-void border border-borderSubtle rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-amber-400"
+                >
+                  {compatibleWeapons.map(w => (
+                    <option key={w.id} value={w.id}>
+                      {w.name} — ATQ Base {w.baseAtk} | {STAT_LABELS[w.subStat.stat]} +{w.subStat.value}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Equipped Artifacts Selector (5 Slots) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    Artéfacts Équipés (depuis l'inventaire)
+                  </label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {Object.entries(activeStats.setCounts).map(([setId, count]) => (
+                      <span key={setId} className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                        {ARTIFACT_SETS[setId]?.name} ({count}p)
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {Object.keys(SLOT_NAMES).map(slotKey => {
+                    const slotArts = inventory.filter(a => a.slot === slotKey);
+                    return (
+                      <div key={slotKey} className="bg-void/80 p-2.5 rounded-xl border border-borderSubtle">
+                        <div className="text-[11px] text-slate-400 mb-1">{SLOT_NAMES[slotKey]}</div>
+                        <select
+                          value={activeMember.equipped[slotKey] || ''}
+                          onChange={(e) => updateTeamMember(selectedSlotIdx, {
+                            equipped: { ...activeMember.equipped, [slotKey]: e.target.value }
+                          })}
+                          className="w-full bg-card border border-borderSubtle rounded-lg px-2 py-1 text-xs text-slate-200"
+                        >
+                          <option value="">-- Aucun --</option>
+                          {slotArts.map(a => (
+                            <option key={a.id} value={a.id}>
+                              [{ARTIFACT_SETS[a.set]?.name.slice(0, 14)}] {STAT_LABELS[a.main]} ({Object.entries(a.subs).map(([k, v]) => `${k.toUpperCase()}+${v}`).join(' ')})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Character Passives & Buff Toggles */}
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+                  Passifs & Buffs du Personnage
+                </label>
+                <div className="space-y-2">
+                  {activeChar.buffs.map(b => (
+                    <label key={b.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-void/60 border border-borderSubtle cursor-pointer hover:border-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={!!activeMember.activeBuffs?.[b.id]}
+                        onChange={(e) => updateTeamMember(selectedSlotIdx, {
+                          activeBuffs: { ...activeMember.activeBuffs, [b.id]: e.target.checked }
+                        })}
+                        className="w-4 h-4 accent-amber-500 rounded"
+                      />
+                      <span className="text-xs text-slate-200">{b.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Final Stats Sheet & Team Buffs / Enemy Config (5 cols) */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Computed Final Stats Card */}
+              <div className="bg-card rounded-2xl border border-borderSubtle p-5">
+                <h3 className="font-semibold text-sm text-slate-100 uppercase tracking-wider mb-3 flex items-center justify-between">
+                  <span>Statistiques Finales (en combat)</span>
+                  <span className="text-xs font-mono text-amber-400">{activeChar.name}</span>
+                </h3>
+                <div className="divide-y divide-borderSubtle/60 text-sm">
+                  <StatRow label="PV Max" value={formatNum(activeStats.totalHp)} sub={`Base ${formatNum(activeStats.baseHp)}`} />
+                  <StatRow label="ATQ Totale" value={formatNum(activeStats.totalAtk)} sub={`Base ${formatNum(activeStats.baseAtk)}`} />
+                  <StatRow label="DÉF Totale" value={formatNum(activeStats.totalDef)} sub={`Base ${formatNum(activeStats.baseDef)}`} />
+                  <StatRow label="Maîtrise Élémentaire" value={Math.round(activeStats.em)} />
+                  <StatRow label="Taux CRIT" value={`${activeStats.cr.toFixed(1)}%`} highlight={activeStats.rawCr > 100 ? 'Cap 100% atteint' : null} />
+                  <StatRow label="DGT CRIT" value={`${activeStats.cd.toFixed(1)}%`} />
+                  <StatRow label="Recharge d'Énergie" value={`${activeStats.er.toFixed(1)}%`} />
+                  <StatRow label={`Bonus DGT ${activeChar.element}`} value={`${activeStats.elemDmg.toFixed(1)}%`} />
+                </div>
+              </div>
+
+              {/* Enemy & Global Buffs Card */}
+              <div className="bg-card rounded-2xl border border-borderSubtle p-5 space-y-4">
+                <h3 className="font-semibold text-sm text-slate-100 uppercase tracking-wider">
+                  Cible Ennemie & Buffs d'Équipe Actifs
+                </h3>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Niveau Ennemi</label>
+                    <input
+                      type="number"
+                      value={enemyConfig.level}
+                      onChange={(e) => setEnemyConfig({ ...enemyConfig, level: Number(e.target.value) })}
+                      className="w-full bg-void border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">RÉS Base (%)</label>
+                    <input
+                      type="number"
+                      value={enemyConfig.baseRes}
+                      onChange={(e) => setEnemyConfig({ ...enemyConfig, baseRes: Number(e.target.value) })}
+                      className="w-full bg-void border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Baisse DÉF (%)</label>
+                    <input
+                      type="number"
+                      value={enemyConfig.defShred}
+                      onChange={(e) => setEnemyConfig({ ...enemyConfig, defShred: Number(e.target.value) })}
+                      className="w-full bg-void border border-borderSubtle rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Active Team Buffs List */}
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                  {activeBuffList.length === 0 ? (
+                    <p className="text-xs text-slate-500 italic">Aucun buff d'équipe actif.</p>
+                  ) : (
+                    activeBuffList.map((b, i) => (
+                      <div key={i} className="text-xs bg-void/70 px-3 py-1.5 rounded-lg border border-borderSubtle/70 flex justify-between items-center gap-2">
+                        <span className="text-slate-300 font-medium truncate">{b.name}</span>
+                        <span className="text-emerald-400 font-mono text-[11px] shrink-0">{b.desc}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Interactive Rotation Sheet & DPS Breakdown */}
+          <section className="bg-card rounded-2xl border border-borderSubtle p-5 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-borderSubtle pb-4">
+              <div>
+                <h2 className="font-semibold text-base text-slate-100">
+                  Feuille de Rotation & Calculateur de DPS
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Ajoutez ou modifiez les actions de votre rotation pour simuler les dégâts moyens, critiques et le DPS global.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-void px-3 py-1.5 rounded-xl border border-borderSubtle">
+                  <span className="text-xs text-slate-400">Durée Rotation :</span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    value={rotationDuration}
+                    onChange={(e) => setRotationDuration(Math.max(1, Number(e.target.value)))}
+                    className="w-12 bg-transparent font-mono text-sm text-amber-400 font-semibold focus:outline-none text-right"
+                  />
+                  <span className="text-xs text-slate-400">sec</span>
+                </div>
+                <button
+                  onClick={() => saveSnapshot('A')}
+                  className="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/40 text-sky-300 text-xs font-medium transition"
+                >
+                  Sauver Comp. A
+                </button>
+                <button
+                  onClick={() => saveSnapshot('B')}
+                  className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-300 text-xs font-medium transition"
+                >
+                  Sauver Comp. B
+                </button>
+                <button
+                  onClick={addRotationStep}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-void font-semibold text-xs transition shadow-md shadow-amber-500/20"
+                >
+                  + Ajouter une Action
+                </button>
+              </div>
+            </div>
+
+            {/* Summary KPI Cards + Stacked Bar */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-void/90 p-4 rounded-xl border border-borderSubtle">
+                <div className="text-xs text-slate-400 uppercase tracking-wider">Dégâts Totaux Rotation</div>
+                <div className="text-2xl font-mono font-bold text-slate-100 mt-1">
+                  {formatNum(simulationResults.totalDamage)}
+                </div>
+              </div>
+              <div className="bg-void/90 p-4 rounded-xl border border-amber-500/30">
+                <div className="text-xs text-amber-400/80 uppercase tracking-wider">DPS Moyen Équipe</div>
+                <div className="text-2xl font-mono font-bold text-amber-400 mt-1">
+                  {formatNum(simulationResults.dps)} <span className="text-sm font-normal text-slate-400">DGT/s</span>
+                </div>
+              </div>
+              <div className="bg-void/90 p-4 rounded-xl border border-borderSubtle flex flex-col justify-between">
+                <div className="text-xs text-slate-400 uppercase tracking-wider mb-2">Répartition du DPS par Personnage</div>
+                <div className="w-full h-4 bg-card rounded-full overflow-hidden flex">
+                  {team.map((m, idx) => {
+                    const c = CHARACTERS_DB[m.charId];
+                    const share = simulationResults.totalDamage > 0
+                      ? (simulationResults.charDamages[idx] / simulationResults.totalDamage) * 100
+                      : 0;
+                    if (share <= 0) return null;
+                    return (
+                      <div
+                        key={idx}
+                        style={{ width: `${share}%`, backgroundColor: ELEMENTS[c.element].color }}
+                        title={`${c.name}: ${share.toFixed(1)}%`}
+                        className="h-full transition-all duration-300"
+                      />
+                    );
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-3 mt-2 text-[11px]">
+                  {team.map((m, idx) => {
+                    const c = CHARACTERS_DB[m.charId];
+                    const share = simulationResults.totalDamage > 0
+                      ? (simulationResults.charDamages[idx] / simulationResults.totalDamage) * 100
+                      : 0;
+                    return (
+                      <span key={idx} className="flex items-center gap-1 text-slate-300">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: ELEMENTS[c.element].color }}></span>
+                        {c.name} ({share.toFixed(0)}%)
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Rotation Spreadsheet Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-borderSubtle text-[11px] uppercase tracking-wider text-slate-400">
+                    <th className="py-2.5 px-3">Personnage</th>
+                    <th className="py-2.5 px-3">Aptitude</th>
+                    <th className="py-2.5 px-3">Description / Note</th>
+                    <th className="py-2.5 px-3">Réaction</th>
+                    <th className="py-2.5 px-3 text-center">Hits</th>
+                    <th className="py-2.5 px-3 text-right">Non-CRIT</th>
+                    <th className="py-2.5 px-3 text-right">CRIT</th>
+                    <th className="py-2.5 px-3 text-right">Total Moyen</th>
+                    <th className="py-2.5 px-2 text-center"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-borderSubtle/50 text-xs">
+                  {simulationResults.rows.map((row) => (
+                    <tr key={row.id} className="hover:bg-void/50 transition">
+                      <td className="py-2 px-3">
+                        <select
+                          value={row.slotIdx}
+                          onChange={(e) => updateRotationStep(row.id, 'slotIdx', Number(e.target.value))}
+                          className="bg-void border border-borderSubtle rounded-lg px-2 py-1 text-slate-200 font-medium"
+                        >
+                          {team.map((m, i) => (
+                            <option key={i} value={i}>{CHARACTERS_DB[m.charId].name}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="py-2 px-3">
+                        <select
+                          value={row.talentKey}
+                          onChange={(e) => updateRotationStep(row.id, 'talentKey', e.target.value)}
+                          className="bg-void border border-borderSubtle rounded-lg px-2 py-1 text-slate-200"
+                        >
+                          <option value="na">Attaque Normale</option>
+                          <option value="ca">Attaque Chargée</option>
+                          <option value="skill">Compétence (E)</option>
+                          <option value="burst">Déchaînement (Q)</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-3">
+                        <input
+                          type="text"
+                          value={row.label}
+                          onChange={(e) => updateRotationStep(row.id, 'label', e.target.value)}
+                          className="w-full min-w-[160px] bg-void border border-borderSubtle rounded-lg px-2.5 py-1 text-slate-200"
+                        />
+                      </td>
+                      <td className="py-2 px-3">
+                        <select
+                          value={row.reaction}
+                          onChange={(e) => updateRotationStep(row.id, 'reaction', e.target.value)}
+                          className="bg-void border border-borderSubtle rounded-lg px-2 py-1 text-slate-200"
+                        >
+                          <option value="none">Aucune</option>
+                          <option value="vape_15">Évaporation (1.5x)</option>
+                          <option value="vape_20">Évaporation (2.0x)</option>
+                          <option value="melt_15">Fonte (1.5x)</option>
+                          <option value="melt_20">Fonte (2.0x)</option>
+                          <option value="aggravate">Suractivation (Aggravate)</option>
+                          <option value="spread">Propagation (Spread)</option>
+                        </select>
+                      </td>
+                      <td className="py-2 px-3 text-center">
+                        <input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={row.hits}
+                          onChange={(e) => updateRotationStep(row.id, 'hits', Math.max(1, Number(e.target.value)))}
+                          className="w-14 bg-void border border-borderSubtle rounded-lg px-2 py-1 text-center font-mono text-slate-200"
+                        />
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono text-slate-400">
+                        {formatNum(row.nonCrit)}
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono text-sky-300">
+                        {formatNum(row.crit)}
+                      </td>
+                      <td className="py-2 px-3 text-right font-mono font-semibold text-amber-400">
+                        {formatNum(row.totalStepDmg)}
+                      </td>
+                      <td className="py-2 px-2 text-center">
+                        <button
+                          onClick={() => removeRotationStep(row.id)}
+                          className="text-slate-500 hover:text-red-400 p-1 rounded transition"
+                          title="Supprimer cette ligne"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    function StatRow({ label, value, sub, highlight }) {
+      return (
+        <div className="py-2 flex items-center justify-between">
+          <div>
+            <span className="text-slate-300">{label}</span>
+            {sub && <span className="text-[11px] text-slate-500 ml-2">({sub})</span>}
+          </div>
+          <div className="text-right">
+            <span className="font-mono font-semibold text-slate-100">{value}</span>
+            {highlight && <div className="text-[10px] text-amber-400">{highlight}</div>}
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // TAB 2 : OPTIMISEUR D'ARTÉFACTS COMBINATOIRE
+    // =========================================================================
+    function OptimizerTab({
+      team, selectedSlotIdx, setSelectedSlotIdx,
+      inventory, inventoryMap, globalBuffs, enemyConfig,
+      rotation, rotationDuration, updateTeamMember, showToast, setActiveTab
+    }) {
+      const [minEr, setMinEr] = useState(110);
+      const [forcedSet, setForcedSet] = useState('any');
+      const [results, setResults] = useState([]);
+      const [isComputing, setIsComputing] = useState(false);
+
+      const targetMember = team[selectedSlotIdx];
+      const targetChar = CHARACTERS_DB[targetMember.charId];
+
+      const runOptimization = () => {
+        setIsComputing(true);
+        setTimeout(() => {
+          const flowers = inventory.filter(a => a.slot === 'flower');
+          const plumes = inventory.filter(a => a.slot === 'plume');
+          const sands = inventory.filter(a => a.slot === 'sands');
+          const goblets = inventory.filter(a => a.slot === 'goblet');
+          const circlets = inventory.filter(a => a.slot === 'circlet');
+
+          const candidates = [];
+          const charSteps = rotation.filter(s => s.slotIdx === selectedSlotIdx);
+          const stepsToEval = charSteps.length > 0
+            ? charSteps
+            : [{ talentKey: 'skill', hits: 1, reaction: 'none' }, { talentKey: 'burst', hits: 1, reaction: 'none' }];
+
+          for (const f of flowers) {
+            for (const p of plumes) {
+              for (const s of sands) {
+                for (const g of goblets) {
+                  for (const c of circlets) {
+                    const eq = { flower: f.id, plume: p.id, sands: s.id, goblet: g.id, circlet: c.id };
+                    const stats = calculateCharacterStats(targetMember, inventoryMap, globalBuffs, eq);
+
+                    // Constraint: Min ER
+                    if (stats.er < minEr) continue;
+
+                    // Constraint: Forced Set
+                    if (forcedSet !== 'any') {
+                      if ((stats.setCounts[forcedSet] || 0) < 4) continue;
+                    }
+
+                    // Evaluate total damage for target character's rotation actions
+                    let scoreDmg = 0;
+                    for (const step of stepsToEval) {
+                      const d = calculateHitDamage(targetChar, stats, step.talentKey, step.reaction, enemyConfig, globalBuffs);
+                      scoreDmg += d.avg * (step.hits || 1);
+                    }
+
+                    candidates.push({ eq, stats, scoreDmg });
+                  }
+                }
+              }
+            }
+          }
+
+          candidates.sort((a, b) => b.scoreDmg - a.scoreDmg);
+          setResults(candidates.slice(0, 6));
+          setIsComputing(false);
+          showToast(`${candidates.length} combinaisons valides analysées !`);
+        }, 50);
+      };
+
+      const equipBuild = (eq) => {
+        updateTeamMember(selectedSlotIdx, { equipped: eq });
+        showToast(`Build optimisé équipé sur ${targetChar.name} !`);
+        setActiveTab('team');
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-card rounded-2xl border border-borderSubtle p-6">
+            <h2 className="font-semibold text-lg text-slate-100 mb-1">Optimiseur Combinatoire d'Artéfacts</h2>
+            <p className="text-xs text-slate-400 mb-5">
+              Évalue toutes les combinaisons possibles de votre inventaire (Fleur × Plume × Sablier × Coupe × Couronne) en tenant compte des buffs d'équipe, des résonances et des réactions de votre rotation.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1.5">Personnage Cible</label>
+                <select
+                  value={selectedSlotIdx}
+                  onChange={(e) => setSelectedSlotIdx(Number(e.target.value))}
+                  className="w-full bg-void border border-borderSubtle rounded-xl px-3 py-2 text-sm text-slate-200"
+                >
+                  {team.map((m, i) => (
+                    <option key={i} value={i}>Slot {i + 1} : {CHARACTERS_DB[m.charId].name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1.5">Recharge d'Énergie Min. (%)</label>
+                <input
+                  type="number"
+                  value={minEr}
+                  onChange={(e) => setMinEr(Number(e.target.value))}
+                  className="w-full bg-void border border-borderSubtle rounded-xl px-3 py-2 text-sm font-mono text-slate-200"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1.5">Contrainte de Set (4 pièces)</label>
+                <select
+                  value={forcedSet}
+                  onChange={(e) => setForcedSet(e.target.value)}
+                  className="w-full bg-void border border-borderSubtle rounded-xl px-3 py-2 text-sm text-slate-200"
+                >
+                  <option value="any">Libre (Meilleurs stats / 2p+2p / 4p)</option>
+                  {Object.values(ARTIFACT_SETS).map(s => (
+                    <option key={s.id} value={s.id}>4p {s.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                onClick={runOptimization}
+                disabled={isComputing}
+                className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-void font-bold text-sm transition shadow-lg shadow-amber-500/20"
+              >
+                {isComputing ? 'Calcul en cours...' : 'Lancer l’Optimisation'}
+              </button>
+            </div>
+          </div>
+
+          {/* Results List */}
+          {results.length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">
+                Top {results.length} Combinaisons Optimales pour {targetChar.name}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {results.map((res, idx) => (
+                  <div key={idx} className="bg-card rounded-2xl border border-borderSubtle p-4 flex flex-col justify-between gap-4 hover:border-amber-500/50 transition">
+                    <div>
+                      <div className="flex items-center justify-between border-b border-borderSubtle pb-3 mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-lg font-mono font-bold text-xs ${idx === 0 ? 'bg-amber-500 text-void' : 'bg-void text-slate-300 border border-borderSubtle'}`}>
+                            #{idx + 1}
+                          </span>
+                          <div className="flex flex-wrap gap-1">
+                            {Object.entries(res.stats.setCounts).filter(([_, c]) => c >= 2).map(([sId, c]) => (
+                              <span key={sId} className="text-[11px] px-2 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                                {ARTIFACT_SETS[sId]?.name} ({c >= 4 ? '4p' : '2p'})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[10px] text-slate-400 uppercase">DGT Rotation Perso</div>
+                          <div className="font-mono font-bold text-amber-400 text-base">{formatNum(res.scoreDmg)}</div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-2 text-center bg-void/70 p-2.5 rounded-xl border border-borderSubtle/70 text-xs mb-3">
+                        <div>
+                          <div className="text-[10px] text-slate-400">ATQ / PV / DÉF</div>
+                          <div className="font-mono text-slate-200">{formatNum(res.stats.totalAtk)} / {formatNum(res.stats.totalHp)}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-slate-400">CRIT</div>
+                          <div className="font-mono text-emerald-400">{res.stats.cr.toFixed(1)}% / {res.stats.cd.toFixed(1)}%</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-slate-400">ME</div>
+                          <div className="font-mono text-slate-200">{Math.round(res.stats.em)}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-slate-400">RE %</div>
+                          <div className="font-mono text-sky-300">{res.stats.er.toFixed(1)}%</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 text-[11px] text-slate-400">
+                        {Object.entries(res.eq).map(([slot, artId]) => {
+                          const a = inventoryMap[artId];
+                          return (
+                            <div key={slot} className="flex justify-between">
+                              <span className="text-slate-300 font-medium">{SLOT_NAMES[slot].split(' ')[0]} :</span>
+                              <span className="truncate max-w-[260px]">
+                                {ARTIFACT_SETS[a.set]?.name} — <span className="text-amber-300">{STAT_LABELS[a.main]}</span>
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => equipBuild(res.eq)}
+                      className="w-full py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-semibold text-xs transition"
+                    >
+                      Équiper ce build sur {targetChar.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // TAB 3 : INVENTAIRE & IMPORT / EXPORT JSON
+    // =========================================================================
+    function InventoryTab({ inventory, setInventory, team, setTeam, rotation, setRotation, showToast }) {
+      const [newArt, setNewArt] = useState({
+        set: 'marechaussee',
+        slot: 'flower',
+        main: 'hp',
+        s1k: 'cr', s1v: 10.5,
+        s2k: 'cd', s2v: 21.0,
+        s3k: 'atk_', s3v: 9.9,
+        s4k: 'er', s4v: 5.8,
+      });
+
+      const [jsonText, setJsonText] = useState('');
+
+      const handleSlotChange = (slot) => {
+        setNewArt(prev => ({
+          ...prev,
+          slot,
+          main: SLOT_MAIN_OPTIONS[slot][0]
+        }));
+      };
+
+      const addArtifact = (e) => {
+        e.preventDefault();
+        const subs = {};
+        if (newArt.s1v > 0) subs[newArt.s1k] = Number(newArt.s1v);
+        if (newArt.s2v > 0) subs[newArt.s2k] = Number(newArt.s2v);
+        if (newArt.s3v > 0) subs[newArt.s3k] = Number(newArt.s3v);
+        if (newArt.s4v > 0) subs[newArt.s4k] = Number(newArt.s4v);
+
+        const created = {
+          id: `art_custom_${Date.now()}`,
+          set: newArt.set,
+          slot: newArt.slot,
+          main: newArt.main,
+          subs
+        };
+
+        setInventory(prev => [created, ...prev]);
+        showToast('Nouvel artéfact ajouté à l’inventaire !');
+      };
+
+      const deleteArtifact = (id) => {
+        setInventory(prev => prev.filter(a => a.id !== id));
+      };
+
+      const handleExportJson = () => {
+        const payload = JSON.stringify({ format: 'STELLAR_THEORYCRAFT_V1', team, rotation, inventory }, null, 2);
+        setJsonText(payload);
+        navigator.clipboard?.writeText(payload);
+        showToast('Configuration complète exportée et copiée dans le presse-papiers !');
+      };
+
+      const handleImportJson = () => {
+        try {
+          const parsed = JSON.parse(jsonText);
+          if (parsed.inventory) setInventory(parsed.inventory);
+          if (parsed.team) setTeam(parsed.team);
+          if (parsed.rotation) setRotation(parsed.rotation);
+          showToast('Données importées avec succès !');
+        } catch (err) {
+          showToast('Erreur : JSON invalide.');
+        }
+      };
+
+      const subKeys = ['cr', 'cd', 'atk_', 'hp_', 'def_', 'em', 'er', 'atk', 'hp', 'def'];
+
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Add Artifact Form & JSON Import/Export (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <form onSubmit={addArtifact} className="bg-card rounded-2xl border border-borderSubtle p-5 space-y-4">
+              <h3 className="font-semibold text-base text-slate-100">Ajouter un Artéfact 5★</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Set</label>
+                  <select
+                    value={newArt.set}
+                    onChange={(e) => setNewArt({ ...newArt, set: e.target.value })}
+                    className="w-full bg-void border border-borderSubtle rounded-xl px-2.5 py-2 text-xs text-slate-200"
+                  >
+                    {Object.values(ARTIFACT_SETS).map(s => (
+                      <option key={s.id} value={s.id}>{s.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Pièce</label>
+                  <select
+                    value={newArt.slot}
+                    onChange={(e) => handleSlotChange(e.target.value)}
+                    className="w-full bg-void border border-borderSubtle rounded-xl px-2.5 py-2 text-xs text-slate-200"
+                  >
+                    {Object.entries(SLOT_NAMES).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Statistique Principale (+20)</label>
+                <select
+                  value={newArt.main}
+                  onChange={(e) => setNewArt({ ...newArt, main: e.target.value })}
+                  className="w-full bg-void border border-borderSubtle rounded-xl px-2.5 py-2 text-xs text-amber-300 font-medium"
+                >
+                  {SLOT_MAIN_OPTIONS[newArt.slot].map(m => (
+                    <option key={m} value={m}>{STAT_LABELS[m]} (+{MAIN_STAT_VALUES[m]})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-xs text-slate-400">4 Substats</label>
+                {[1, 2, 3, 4].map(n => (
+                  <div key={n} className="grid grid-cols-3 gap-2">
+                    <select
+                      value={newArt[`s${n}k`]}
+                      onChange={(e) => setNewArt({ ...newArt, [`s${n}k`]: e.target.value })}
+                      className="col-span-2 bg-void border border-borderSubtle rounded-lg px-2 py-1.5 text-xs text-slate-200"
+                    >
+                      {subKeys.map(sk => (
+                        <option key={sk} value={sk}>{STAT_LABELS[sk]}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={newArt[`s${n}v`]}
+                      onChange={(e) => setNewArt({ ...newArt, [`s${n}v`]: e.target.value })}
+                      className="bg-void border border-borderSubtle rounded-lg px-2 py-1.5 text-xs font-mono text-slate-200"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <button type="submit" className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-void font-bold text-xs transition">
+                + Ajouter à l'Inventaire
+              </button>
+            </form>
+
+            {/* Import / Export JSON */}
+            <div className="bg-card rounded-2xl border border-borderSubtle p-5 space-y-3">
+              <h3 className="font-semibold text-sm text-slate-100 uppercase tracking-wider">Import / Export JSON</h3>
+              <p className="text-xs text-slate-400">
+                Sauvegardez ou partagez votre équipe, rotation et inventaire au format JSON.
+              </p>
+              <textarea
+                rows="4"
+                value={jsonText}
+                onChange={(e) => setJsonText(e.target.value)}
+                placeholder="Collez un JSON ici pour importer ou cliquez sur Exporter..."
+                className="w-full bg-void border border-borderSubtle rounded-xl p-2.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-400"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleExportJson}
+                  className="py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 text-xs font-semibold transition"
+                >
+                  Exporter JSON
+                </button>
+                <button
+                  onClick={handleImportJson}
+                  className="py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-semibold transition"
+                >
+                  Importer JSON
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  setInventory(generateDemoInventory());
+                  showToast('Inventaire par défaut restauré.');
+                }}
+                className="w-full py-1.5 rounded-lg bg-void border border-borderSubtle text-slate-400 hover:text-slate-200 text-xs transition"
+              >
+                Réinitialiser l'inventaire démo (45 artéfacts)
+              </button>
+            </div>
+          </div>
+
+          {/* Right: Artifact Grid (7 cols) */}
+          <div className="lg:col-span-7 bg-card rounded-2xl border border-borderSubtle p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-base text-slate-100">
+                Artéfacts en Stock ({inventory.length})
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[720px] overflow-y-auto pr-1">
+              {inventory.map(art => (
+                <div key={art.id} className="bg-void/90 p-3.5 rounded-xl border border-borderSubtle flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <span className="text-xs font-semibold text-amber-300">{ARTIFACT_SETS[art.set]?.name}</span>
+                      <button
+                        onClick={() => deleteArtifact(art.id)}
+                        className="text-slate-500 hover:text-red-400 text-xs"
+                        title="Supprimer"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="text-[11px] text-slate-400 mb-2">
+                      {SLOT_NAMES[art.slot]} • <span className="text-slate-200 font-medium">{STAT_LABELS[art.main]} (+{MAIN_STAT_VALUES[art.main]})</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 text-[11px] font-mono text-slate-300 bg-card/70 p-2 rounded-lg">
+                      {Object.entries(art.subs).map(([k, v]) => (
+                        <div key={k}>• {STAT_LABELS[k].split(' ')[0]}: +{v}</div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // TAB 4 : COMPARATEUR DE CONFIGURATIONS (A vs B)
+    // =========================================================================
+    function ComparatorTab({ compA, compB, saveSnapshot, simulationResults }) {
+      const renderDelta = (valA, valB) => {
+        if (!valA || !valB) return null;
+        const diff = ((valB - valA) / valA) * 100;
+        const isPos = diff >= 0;
+        return (
+          <span className={`font-mono text-xs px-2 py-0.5 rounded-md ${isPos ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+            {isPos ? '+' : ''}{diff.toFixed(2)}%
+          </span>
+        );
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-card rounded-2xl border border-borderSubtle p-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-semibold text-base text-slate-100">Comparateur de Builds & Rotations (A vs B)</h2>
+              <p className="text-xs text-slate-400">
+                Enregistrez deux variantes d'équipe, d'armes ou d'artéfacts pour comparer précisément le gain de DPS.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => saveSnapshot('A')}
+                className="px-3.5 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/40 text-sky-300 text-xs font-semibold"
+              >
+                Capturer Équipe Actuelle → A
+              </button>
+              <button
+                onClick={() => saveSnapshot('B')}
+                className="px-3.5 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/40 text-purple-300 text-xs font-semibold"
+              >
+                Capturer Équipe Actuelle → B
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[{ label: 'Configuration A', data: compA, accent: 'sky' }, { label: 'Configuration B', data: compB, accent: 'purple' }].map((slot, idx) => (
+              <div key={idx} className="bg-card rounded-2xl border border-borderSubtle p-5">
+                <div className="flex items-center justify-between border-b border-borderSubtle pb-3 mb-4">
+                  <span className={`font-semibold text-sm ${slot.accent === 'sky' ? 'text-sky-400' : 'text-purple-400'}`}>
+                    {slot.label}
+                  </span>
+                  {slot.data && <span className="text-xs text-slate-400">Sauvegardé à {slot.data.timestamp}</span>}
+                </div>
+
+                {!slot.data ? (
+                  <div className="py-12 text-center text-xs text-slate-500">
+                    Aucune donnée enregistrée. Cliquez sur « Capturer Équipe Actuelle » ci-dessus.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-void p-4 rounded-xl border border-borderSubtle flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] text-slate-400 uppercase">DPS Équipe ({slot.data.duration}s)</div>
+                        <div className="text-2xl font-mono font-bold text-amber-400">{formatNum(slot.data.dps)} /s</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-[11px] text-slate-400 uppercase">DGT Totaux</div>
+                        <div className="text-base font-mono text-slate-200">{formatNum(slot.data.totalDamage)}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {slot.data.members.map((m, i) => (
+                        <div key={i} className="bg-void/60 p-3 rounded-xl border border-borderSubtle/70 flex items-center justify-between text-xs">
+                          <div>
+                            <div className="font-semibold text-slate-200">{m.char.name}</div>
+                            <div className="text-[11px] text-slate-400">{m.weapon.name}</div>
+                          </div>
+                          <div className="text-right font-mono">
+                            <div className="text-slate-200">{formatNum(m.damage)} DGT</div>
+                            <div className="text-[11px] text-amber-400">{m.share.toFixed(1)}%</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {compA && compB && (
+            <div className="bg-card rounded-2xl border border-amber-500/40 p-5 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="text-xs text-slate-400 uppercase tracking-wider">Différence de Performance (B par rapport à A)</div>
+                <div className="text-sm text-slate-200 mt-1">
+                  Passage de <span className="font-mono font-semibold text-sky-300">{formatNum(compA.dps)} DPS</span> à{' '}
+                  <span className="font-mono font-semibold text-purple-300">{formatNum(compB.dps)} DPS</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-slate-400">Gain / Perte :</span>
+                {renderDelta(compA.dps, compB.dps)}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
