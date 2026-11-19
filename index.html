@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stellar Theorycraft — Genshin Impact Optimizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+    :root {
+      --bg-canvas: #0b0e16;
+      --bg-sidebar: #0e121c;
+      --bg-surface: #131825;
+      --bg-elevated: #192032;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --gold-accent: #d3bc8e;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(circle at 18% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 42%),
+        radial-gradient(circle at 85% 12%, rgba(211, 188, 142, 0.05) 0%, transparent 38%);
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Surfaces & Cards */
+    .surface-card {
+      background: linear-gradient(180deg, rgba(22, 28, 43, 0.92) 0%, rgba(16, 21, 33, 0.96) 100%);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.55);
+    }
+
+    .surface-panel {
+      background: rgba(13, 17, 27, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .gold-border {
+      border-color: rgba(211, 188, 142, 0.28);
+    }
+
+    .text-celestial-gold {
+      color: #d3bc8e;
+    }
+
+    /* Elemental Themes */
+    .el-cryo-banner { background: linear-gradient(135deg, rgba(56, 189, 248, 0.24) 0%, rgba(14, 116, 144, 0.08) 100%); border-bottom: 1px solid rgba(125, 211, 252, 0.25); }
+    .el-cryo-badge { color: #7dd3fc; background: rgba(125, 211, 252, 0.14); border-color: rgba(125, 211, 252, 0.35); }
+    .el-cryo-ring { border-top: 2px solid #7dd3fc; }
+
+    .el-hydro-banner { background: linear-gradient(135deg, rgba(37, 99, 235, 0.26) 0%, rgba(2, 132, 199, 0.08) 100%); border-bottom: 1px solid rgba(56, 189, 248, 0.28); }
+    .el-hydro-badge { color: #38bdf8; background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.35); }
+    .el-hydro-ring { border-top: 2px solid #38bdf8; }
+
+    .el-pyro-banner { background: linear-gradient(135deg, rgba(234, 88, 12, 0.26) 0%, rgba(185, 28, 28, 0.08) 100%); border-bottom: 1px solid rgba(251, 146, 60, 0.28); }
+    .el-pyro-badge { color: #fb923c; background: rgba(251, 146, 60, 0.14); border-color: rgba(251, 146, 60, 0.35); }
+    .el-pyro-ring { border-top: 2px solid #fb923c; }
+
+    .el-electro-banner { background: linear-gradient(135deg, rgba(147, 51, 234, 0.26) 0%, rgba(107, 33, 168, 0.08) 100%); border-bottom: 1px solid rgba(192, 132, 252, 0.28); }
+    .el-electro-badge { color: #c084fc; background: rgba(192, 132, 252, 0.14); border-color: rgba(192, 132, 252, 0.35); }
+    .el-electro-ring { border-top: 2px solid #c084fc; }
+
+    .el-dendro-banner { background: linear-gradient(135deg, rgba(22, 163, 74, 0.25) 0%, rgba(21, 128, 61, 0.08) 100%); border-bottom: 1px solid rgba(74, 222, 128, 0.28); }
+    .el-dendro-badge { color: #4ade80; background: rgba(74, 222, 128, 0.14); border-color: rgba(74, 222, 128, 0.35); }
+    .el-dendro-ring { border-top: 2px solid #4ade80; }
+
+    .el-anemo-banner { background: linear-gradient(135deg, rgba(13, 148, 136, 0.26) 0%, rgba(15, 118, 110, 0.08) 100%); border-bottom: 1px solid rgba(45, 212, 191, 0.28); }
+    .el-anemo-badge { color: #2dd4bf; background: rgba(45, 212, 191, 0.14); border-color: rgba(45, 212, 191, 0.35); }
+    .el-anemo-ring { border-top: 2px solid #2dd4bf; }
+
+    .el-geo-banner { background: linear-gradient(135deg, rgba(202, 138, 4, 0.26) 0%, rgba(161, 98, 7, 0.08) 100%); border-bottom: 1px solid rgba(250, 204, 21, 0.28); }
+    .el-geo-badge { color: #facc15; background: rgba(250, 204, 21, 0.14); border-color: rgba(250, 204, 21, 0.35); }
+    .el-geo-ring { border-top: 2px solid #facc15; }
+
+    /* Genshin 5-Star Artifact Card Header */
+    .rarity-5-header {
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.32) 0%, rgba(180, 83, 9, 0.12) 65%, rgba(24, 31, 48, 0.6) 100%);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.28);
+    }
+
+    /* Form Controls */
+    select, input[type="number"] {
+      background-color: #101522;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: #d3bc8e;
+      box-shadow: 0 0 0 2px rgba(211, 188, 142, 0.16);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b0e16; }
+    ::-webkit-scrollbar-thumb { background: #28334a; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b4b6b; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row selection:bg-amber-400/20 selection:text-amber-200">
+
+  <!-- MOBILE SIDEBAR BACKDROP -->
+  <div id="sidebar-backdrop" class="fixed inset-0 z-40 bg-black/70 backdrop-blur-xs hidden lg:hidden"></div>
+
+  <!-- LEFT VERTICAL SIDEBAR (STELLAR OPTIMIZER STYLE) -->
+  <aside id="app-sidebar" class="fixed lg:sticky top-0 left-0 z-50 h-screen w-64 shrink-0 bg-[#0e121c] border-r border-white/[0.07] flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-200 ease-out">
+    
+    <!-- Top Brand & Navigation -->
+    <div class="p-4 space-y-6 overflow-y-auto">
+      <!-- Brand Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f3e1b9] via-[#d3bc8e] to-[#8c7143] p-[1px] shadow-lg shadow-amber-950/30">
+            <div class="w-full h-full rounded-[11px] bg-[#121724] flex items-center justify-center text-[#d3bc8e]">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 1L14.8 9.2L23 12L14.8 14.8L12 23L9.2 14.8L1 12L9.2 9.2L12 1Z"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-display font-extrabold text-sm tracking-wide text-white">STELLAR</span>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#d3bc8e]/15 text-[#d3bc8e] border border-[#d3bc8e]/30 mono">v2.6</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-medium">Theorycraft & Optimizer</p>
+          </div>
+        </div>
+        <button id="btn-close-sidebar" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Navigation Section -->
+      <div class="space-y-1.5" id="nav-tabs">
+        <div class="px-2.5 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Espace de Travail</div>
+
+        <button data-tab="team" data-title="Équipe & Rotation DPS" data-sub="Configuration des 4 personnages, résonances élémentaires et simulation de cycle" class="tab-btn active w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-[#d3bc8e]/20 to-indigo-500/10 text-[#f3e5c8] border border-[#d3bc8e]/30 transition">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-[#d3bc8e]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            Équipe & Rotation
+          </span>
+          <span class="w-1.5 h-1.5 rounded-full bg-[#d3bc8e]"></span>
+        </button>
+
+        <button data-tab="optimizer" data-title="Optimiseur Combinatoire" data-sub="Calcul exhaustif des meilleures combinaisons d'artéfacts 5★ selon vos contraintes" class="tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent transition">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Optimiseur
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Auto</span>
+        </button>
+
+        <button data-tab="inventory" data-title="Inventaire d'Artéfacts" data-sub="Gérez vos pièces 5★, statistiques principales et substats enregistrées" class="tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent transition">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Inventaire
+          </span>
+          <span id="inv-count" class="mono text-[11px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-white/10">0</span>
+        </button>
+
+        <button data-tab="compare" data-title="Comparateur A / B" data-sub="Comparez deux configurations complètes d'équipe, d'armes ou d'artéfacts" class="tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent transition">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            Comparateur A/B
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Sidebar: Live DPS Summary & Data Actions -->
+    <div class="p-4 border-t border-white/[0.07] space-y-3 bg-[#0b0e16]/70">
+      <div class="rounded-xl p-3 bg-gradient-to-br from-[#171e2e] to-[#111623] border border-[#d3bc8e]/25 space-y-1">
+        <div class="flex items-center justify-between text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+          <span>DPS Équipe Actuel</span>
+          <span class="text-[#d3bc8e]">● Live</span>
+        </div>
+        <div id="sidebar-dps-val" class="text-lg font-extrabold text-white mono">0 /s</div>
+        <div class="text-[11px] text-slate-400 flex justify-between">
+          <span>Total Cycle :</span>
+          <span id="sidebar-rot-val" class="mono text-slate-300">0</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button id="btn-export" class="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-[11px] font-semibold bg-[#161c2c] hover:bg-[#1e263b] text-slate-200 border border-white/10 transition">
+          <svg class="w-3.5 h-3.5 text-[#d3bc8e]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Exporter
+        </button>
+        <label class="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg text-[11px] font-semibold bg-[#161c2c] hover:bg-[#1e263b] text-slate-200 border border-white/10 cursor-pointer transition">
+          <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Importer
+          <input type="file" id="input-import" accept=".json" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT MAIN AREA -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- SLIM CONTEXT TOP BAR -->
+    <header class="sticky top-0 z-30 bg-[#0b0e16]/85 backdrop-blur-md border-b border-white/[0.07] px-4 md:px-8 py-3.5 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3 min-w-0">
+        <button id="btn-open-sidebar" class="lg:hidden p-2 rounded-lg bg-[#161c2c] border border-white/10 text-slate-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="truncate">
+          <div class="flex items-center gap-2">
+            <h1 id="topbar-title" class="font-display font-bold text-base md:text-lg text-white truncate">Équipe & Rotation DPS</h1>
+          </div>
+          <p id="topbar-sub" class="text-xs text-slate-400 truncate hidden sm:block">Configuration des 4 personnages, résonances élémentaires et simulation de cycle</p>
+        </div>
+      </div>
+
+      <!-- Quick Target Pill Status -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#131825] border border-white/[0.08] text-xs">
+          <span class="text-slate-400">Cible :</span>
+          <span id="topbar-enemy-badge" class="mono font-semibold text-[#d3bc8e]">Niv.100 • RÉS -30%</span>
+        </div>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-400/25 text-xs">
+          <span class="text-indigo-300 font-medium hidden md:inline">DPS :</span>
+          <span id="topbar-dps-badge" class="mono font-bold text-white">0 /s</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- NOTIFICATION TOAST (Replaces alert) -->
+    <div id="toast-banner" class="hidden fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl bg-[#192032] border border-[#d3bc8e]/50 text-xs font-medium text-white shadow-2xl flex items-center gap-2.5">
+      <span class="text-[#d3bc8e] font-bold">✦</span>
+      <span id="toast-msg">Notification</span>
+    </div>
+
+    <!-- WORKSPACE CONTENT -->
+    <main class="flex-1 max-w-[1440px] w-full mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+
+      <!-- ==================== TAB 1: TEAM & ROTATION ==================== -->
+      <section id="tab-team" class="tab-panel space-y-6">
+        
+        <!-- 4 CHARACTER CARDS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="team-cards"></div>
+
+        <!-- RESONANCES, TEAM BUFFS & ENEMY CONFIG -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Resonances & Active Team Buffs -->
+          <div class="surface-card rounded-2xl p-5 space-y-3.5 lg:col-span-2">
+            <div class="flex items-center justify-between border-b border-white/[0.06] pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-[#d3bc8e]">✦</span>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Résonances Élémentaires & Buffs Actifs</h2>
+              </div>
+              <span class="text-xs text-[#d3bc8e] font-semibold mono px-2 py-0.5 rounded bg-[#d3bc8e]/10 border border-[#d3bc8e]/20" id="active-buff-count">0 buffs actifs</span>
+            </div>
+            <div id="resonances-list" class="flex flex-wrap gap-2"></div>
+            <div id="team-buffs-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1"></div>
+          </div>
+
+          <!-- Enemy Target Configuration -->
+          <div class="surface-card rounded-2xl p-5 space-y-3.5">
+            <div class="flex items-center gap-2 border-b border-white/[0.06] pb-2.5">
+              <span class="text-rose-400">◈</span>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Cible Ennemie & Cycle</h2>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block text-slate-400 text-[11px] mb-1">Niveau Ennemi</label>
+                <input type="number" id="enemy-lvl" value="100" min="1" max="110" class="w-full rounded-xl px-3 py-2 text-white mono" />
+              </div>
+              <div>
+                <label class="block text-slate-400 text-[11px] mb-1">RÉS Base (%)</label>
+                <input type="number" id="enemy-res" value="10" step="5" class="w-full rounded-xl px-3 py-2 text-white mono" />
+              </div>
+              <div>
+                <label class="block text-slate-400 text-[11px] mb-1">Durée Rotation (s)</label>
+                <input type="number" id="rot-duration" value="20" min="5" max="60" step="0.5" class="w-full rounded-xl px-3 py-2 text-white mono" />
+              </div>
+              <div>
+                <label class="block text-slate-400 text-[11px] mb-1">Réduction RÉS (%)</label>
+                <input type="number" id="enemy-shred" value="40" step="5" class="w-full rounded-xl px-3 py-2 text-white mono" />
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed pt-1">
+              Multiplicateur DÉF : <span class="mono text-slate-300">(Niv+100) / [(Niv+100) + (Enn+100)]</span>. Résistance négative divisée par 2.
+            </p>
+          </div>
+        </div>
+
+        <!-- ROTATION SHEET & DPS BREAKDOWN -->
+        <div class="surface-card rounded-2xl p-5 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                Feuille de Rotation & Répartition DPS
+              </h2>
+              <p class="text-xs text-slate-400">Simulez l'enchaînement complet des compétences et réactions élémentaires de votre équipe</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="px-3.5 py-2 rounded-xl bg-[#0e121c] border border-white/[0.07] text-right">
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">Dégâts / Rotation</div>
+                <div class="text-base font-extrabold text-white mono" id="total-rot-dmg">0</div>
+              </div>
+              <div class="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d3bc8e]/15 to-indigo-500/15 border border-[#d3bc8e]/30 text-right">
+                <div class="text-[10px] text-[#d3bc8e] uppercase tracking-wider font-bold">DPS Moyen Équipe</div>
+                <div class="text-lg font-extrabold text-white mono" id="total-team-dps">0 /s</div>
+              </div>
+              <button id="btn-add-action" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d3bc8e] to-[#b89b64] hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg transition">
+                + Ajouter Action
+              </button>
+            </div>
+          </div>
+
+          <!-- DPS Distribution Bar -->
+          <div class="surface-panel rounded-xl p-3.5 space-y-2">
+            <div class="flex flex-wrap justify-between items-center gap-2 text-xs">
+              <span class="text-slate-400 font-medium">Contribution au DPS total</span>
+              <span id="dps-share-labels" class="mono text-[11px] text-slate-300"></span>
+            </div>
+            <div class="w-full h-3 bg-[#090c12] rounded-full overflow-hidden flex p-0.5 gap-0.5" id="dps-bar"></div>
+          </div>
+
+          <!-- Actions Table -->
+          <div class="overflow-x-auto rounded-xl border border-white/[0.06]">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#0e121c] border-b border-white/[0.07] text-slate-400 uppercase text-[10px] tracking-wider">
+                  <th class="py-3 px-3">Personnage</th>
+                  <th class="py-3 px-3">Compétence / Action</th>
+                  <th class="py-3 px-3 text-center">Coups</th>
+                  <th class="py-3 px-3">Réaction</th>
+                  <th class="py-3 px-3 text-right">Non-CRIT</th>
+                  <th class="py-3 px-3 text-right">CRIT</th>
+                  <th class="py-3 px-3 text-right">Dégâts Moyens</th>
+                  <th class="py-3 px-3 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="rotation-tbody" class="divide-y divide-white/[0.05] bg-[#121724]/50"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: OPTIMIZER ==================== -->
+      <section id="tab-optimizer" class="tab-panel hidden space-y-6">
+        <div class="surface-card rounded-2xl p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="text-emerald-400">⚡</span> Optimiseur Combinatoire d'Artéfacts
+              </h2>
+              <p class="text-xs text-slate-400">Évalue toutes les combinaisons de 5 pièces de votre inventaire pour maximiser les dégâts moyens</p>
+            </div>
+            <button id="btn-run-opt" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-950/40 transition">
+              ▶ Lancer l'Optimisation
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div class="surface-panel p-3 rounded-xl">
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Personnage cible</label>
+              <select id="opt-char-slot" class="w-full rounded-lg px-3 py-2 text-white font-semibold"></select>
+            </div>
+            <div class="surface-panel p-3 rounded-xl">
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Aptitude à maximiser</label>
+              <select id="opt-skill-idx" class="w-full rounded-lg px-3 py-2 text-white"></select>
+            </div>
+            <div class="surface-panel p-3 rounded-xl">
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Recharge d'Énergie Min. (%)</label>
+              <input type="number" id="opt-min-er" value="120" min="100" max="300" step="5" class="w-full rounded-lg px-3 py-2 text-white mono" />
+            </div>
+            <div class="surface-panel p-3 rounded-xl">
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Contrainte de Set (4 pièces)</label>
+              <select id="opt-force-set" class="w-full rounded-lg px-3 py-2 text-white">
+                <option value="any">N'importe quel set (Meilleures stats)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="opt-results" class="space-y-3 pt-2">
+            <div class="surface-panel rounded-xl text-center py-10 text-slate-400 text-xs">
+              Configurez vos critères ci-dessus puis cliquez sur <span class="text-emerald-400 font-semibold">« Lancer l'Optimisation »</span>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: INVENTORY ==================== -->
+      <section id="tab-inventory" class="tab-panel hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Add New Artifact Form -->
+          <div class="surface-card rounded-2xl p-5 space-y-4 h-fit border-t-2 border-t-amber-400/70">
+            <div class="flex items-center justify-between border-b border-white/[0.07] pb-3">
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="text-amber-400">★★★★★</span> Nouvel Artéfact
+              </h2>
+              <span class="text-[10px] uppercase px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">+20 Max</span>
+            </div>
+
+            <form id="form-add-art" class="space-y-3.5 text-xs">
+              <div>
+                <label class="block text-slate-400 text-[11px] mb-1">Set d'Artéfact</label>
+                <select id="art-set" class="w-full rounded-xl px-3 py-2 text-white"></select>
+              </div>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Emplacement</label>
+                  <select id="art-slot" class="w-full rounded-xl px-2.5 py-2 text-white">
+                    <option value="flower">Fleur de la vie</option>
+                    <option value="plume">Plume de la mort</option>
+                    <option value="sands">Sables du temps</option>
+                    <option value="goblet">Coupe d'espace</option>
+                    <option value="circlet">Diadème de logos</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-400 text-[11px] mb-1">Stat Principale</label>
+                  <select id="art-main" class="w-full rounded-xl px-2.5 py-2 text-white">
+                    <option value="hp">PV Flat (4780)</option>
+                    <option value="atk">ATQ Flat (311)</option>
+                    <option value="hp_p">PV % (46.6%)</option>
+                    <option value="atk_p">ATQ % (46.6%)</option>
+                    <option value="def_p">DÉF % (58.3%)</option>
+                    <option value="er">Recharge Énergie (51.8%)</option>
+                    <option value="em">Maîtrise Élém. (187)</option>
+                    <option value="dmg">Bonus DGT Élém. (46.6%)</option>
+                    <option value="cr">Taux CRIT (31.1%)</option>
+                    <option value="cd">DGT CRIT (62.2%)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-white/[0.07]">
+                <label class="block text-slate-400 text-[11px] mb-2">Substats (4 lignes)</label>
+                <div class="space-y-2" id="substats-inputs"></div>
+              </div>
+
+              <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d3bc8e] to-[#b89b64] hover:brightness-110 text-slate-950 font-extrabold transition shadow-md">
+                + Ajouter à l'Inventaire
+              </button>
+            </form>
+          </div>
+
+          <!-- Artifact Inventory Grid -->
+          <div class="surface-card rounded-2xl p-5 space-y-4 lg:col-span-2">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] pb-3.5">
+              <div>
+                <h2 class="text-sm font-bold text-white">Collection d'Artéfacts 5★</h2>
+                <p class="text-[11px] text-slate-400">Cliquez sur une pièce ou filtrez par emplacement</p>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <select id="filter-slot" class="rounded-xl px-3 py-1.5 text-white">
+                  <option value="all">Tous les emplacements</option>
+                  <option value="flower">Fleurs</option>
+                  <option value="plume">Plumes</option>
+                  <option value="sands">Sabliers</option>
+                  <option value="goblet">Coupes</option>
+                  <option value="circlet">Diadèmes</option>
+                </select>
+                <button id="btn-reset-inv" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-medium transition">
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+            <div id="inventory-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5 max-h-[680px] overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: COMPARE A/B ==================== -->
+      <section id="tab-compare" class="tab-panel hidden space-y-6">
+        <div class="surface-card rounded-2xl p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div>
+              <h2 class="text-base font-bold text-white">Comparateur de Configurations A / B</h2>
+              <p class="text-xs text-slate-400">Capturez l'état actuel de votre équipe dans le Slot A ou B pour mesurer le gain exact d'un changement</p>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button id="btn-save-a" class="px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-400/40 text-xs font-bold transition">
+                Enregistrer Slot A
+              </button>
+              <button id="btn-save-b" class="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/40 text-xs font-bold transition">
+                Enregistrer Slot B
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="compare-container"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL: CHARACTER DETAILS & STATS -->
+  <div id="char-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="surface-card rounded-2xl max-w-2xl w-full p-6 space-y-5 border border-[#d3bc8e]/30 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+        <div class="flex items-center gap-2.5">
+          <span class="text-[#d3bc8e] text-base">✦</span>
+          <h3 class="text-base font-bold text-white" id="modal-title">Détails des Statistiques</h3>
+        </div>
+        <button id="btn-close-modal" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center font-bold transition">✕</button>
+      </div>
+      <div id="modal-body" class="space-y-4 text-xs"></div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================================================
+       1. DATABASE: CHARACTERS, WEAPONS, ARTIFACT SETS
+       ============================================================================ */
+    const CHARACTERS = {
+      tsaritsa: {
+        id: 'tsaritsa', name: 'Tsaritsa', element: 'Cryo', weaponType: 'Catalyst',
+        baseHp: 11850, baseAtk: 342, baseDef: 680, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: "Décret Givré : +20% Taux CRIT et +35% DGT Cryo à toute l'équipe sous Gel/Cryo",
+        teamBuff: { cr: 0.20, dmg: 0.35 },
+        skills: [
+          { name: 'Attaque Normale (3 coups)', mult: 2.45, stat: 'atk', hits: 1, defaultReaction: 'none' },
+          { name: 'Compétence : Souveraineté Boréale', mult: 4.80, stat: 'atk', hits: 1, defaultReaction: 'melt' },
+          { name: 'Déchaînement : Hiver Éternel', mult: 9.60, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+        ]
+      },
+      danica: {
+        id: 'danica', name: 'Danica', element: 'Hydro', weaponType: 'Sword',
+        baseHp: 13400, baseAtk: 298, baseDef: 740, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: "Marée Astrale : +25% PV Max et +30% DGT de Compétence à l'équipe",
+        teamBuff: { hp_p: 0.25, dmg: 0.30 },
+        skills: [
+          { name: "Compétence : Lame d'Écume (Tick)", mult: 0.185, stat: 'hp', hits: 6, defaultReaction: 'vape' },
+          { name: 'Déchaînement : Déluge Stellaire', mult: 0.42, stat: 'hp', hits: 1, defaultReaction: 'vape' }
+        ]
+      },
+      sandrone: {
+        id: 'sandrone', name: 'Sandrone', element: 'Geo', weaponType: 'Catalyst',
+        baseHp: 11200, baseAtk: 315, baseDef: 890, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Matrice Automatique : +240 Maîtrise Élém. et +25% DGT Géo/Cristallisation',
+        teamBuff: { em: 240, dmg: 0.25 },
+        skills: [
+          { name: "Compétence : Salve de l'Automate", mult: 3.10, stat: 'def', hits: 3, defaultReaction: 'none' },
+          { name: 'Déchaînement : Protocole Titan', mult: 6.40, stat: 'def', hits: 1, defaultReaction: 'none' }
+        ]
+      },
+      furina: {
+        id: 'furina', name: 'Furina', element: 'Hydro', weaponType: 'Sword',
+        baseHp: 15307, baseAtk: 244, baseDef: 696, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: "Fanfare Max : +75% Bonus DGT à toute l'équipe",
+        teamBuff: { dmg: 0.75 },
+        skills: [
+          { name: 'Salon Solitaire (Crabaletta)', mult: 0.149, stat: 'hp', hits: 4, defaultReaction: 'vape' },
+          { name: 'Salon Solitaire (Chevalmarin + Gentilhomme)', mult: 0.085, stat: 'hp', hits: 8, defaultReaction: 'none' },
+          { name: 'Déchaînement : Que le monde réjouisse', mult: 0.205, stat: 'hp', hits: 1, defaultReaction: 'none' }
+        ]
+      },
+      neuvillette: {
+        id: 'neuvillette', name: 'Neuvillette', element: 'Hydro', weaponType: 'Catalyst',
+        baseHp: 14695, baseAtk: 208, baseDef: 576, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: "Héritier de l'Ancienne Mer : +30% DGT Hydro (3 cumuls draconiques)",
+        teamBuff: { dmg: 0.30 },
+        skills: [
+          { name: 'Attaque Chargée : Jugement Équitable (8 ticks)', mult: 0.145, stat: 'hp', hits: 8, defaultReaction: 'none' },
+          { name: 'Compétence : Ô Larmes, je paierai', mult: 0.232, stat: 'hp', hits: 1, defaultReaction: 'none' },
+          { name: 'Déchaînement : Ô Marées, je suis revenu', mult: 0.401, stat: 'hp', hits: 1, defaultReaction: 'none' }
+        ]
+      },
+      arlecchino: {
+        id: 'arlecchino', name: 'Arlecchino', element: 'Pyro', weaponType: 'Polearm',
+        baseHp: 13103, baseAtk: 342, baseDef: 765, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Engagement Vital (145%) : +40% DGT Pyro & Conversion Pyro',
+        teamBuff: { dmg: 0.40 },
+        skills: [
+          { name: 'Attaque Normale (Masque de la Mort Rouge)', mult: 2.35, stat: 'atk', hits: 6, defaultReaction: 'vape' },
+          { name: "Compétence : Tout n'est que cendres", mult: 2.68, stat: 'atk', hits: 1, defaultReaction: 'none' },
+          { name: 'Déchaînement : Ascension de la Lune', mult: 6.67, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+        ]
+      },
+      xilonen: {
+        id: 'xilonen', name: 'Xilonen', element: 'Geo', weaponType: 'Sword',
+        baseHp: 12405, baseAtk: 258, baseDef: 930, ascStat: 'def_p', ascVal: 0.36,
+        passiveDesc: 'Échantillons Sources : -36% RÉS Élém. ennemie (inclus dans RÉS cible)',
+        teamBuff: { dmg: 0.15 },
+        skills: [
+          { name: 'Compétence : Lame de Yohualtecuhtli', mult: 2.40, stat: 'def', hits: 2, defaultReaction: 'none' },
+          { name: 'Déchaînement : Rythme Ocelot', mult: 3.80, stat: 'def', hits: 1, defaultReaction: 'none' }
+        ]
+      },
+      kazuha: {
+        id: 'kazuha', name: 'Kaedehara Kazuha', element: 'Anemo', weaponType: 'Sword',
+        baseHp: 13348, baseAtk: 297, baseDef: 807, ascStat: 'em', ascVal: 115.2,
+        passiveDesc: "Poésie de Fuubutsu (900 ME) : +36% Bonus DGT Élém. à l'équipe",
+        teamBuff: { dmg: 0.36 },
+        skills: [
+          { name: 'Compétence : Chihayaburu + Plongée', mult: 4.68, stat: 'atk', hits: 1, defaultReaction: 'none' },
+          { name: 'Déchaînement : Coup de Kazuha (5 ticks)', mult: 2.16, stat: 'atk', hits: 5, defaultReaction: 'none' }
+        ]
+      },
+      bennett: {
+        id: 'bennett', name: 'Bennett', element: 'Pyro', weaponType: 'Sword',
+        baseHp: 12397, baseAtk: 191, baseDef: 771, ascStat: 'er', ascVal: 0.267,
+        passiveDesc: "Merveilleux Voyage (C1 + Niv.13) : +1050 ATQ Flat à l'équipe",
+        teamBuff: { atk: 1050, dmg: 0.15 },
+        skills: [
+          { name: 'Compétence : Passion Ardente', mult: 2.48, stat: 'atk', hits: 2, defaultReaction: 'melt' },
+          { name: 'Déchaînement : Merveilleux Voyage', mult: 4.19, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+        ]
+      },
+      nahida: {
+        id: 'nahida', name: 'Nahida', element: 'Dendro', weaponType: 'Catalyst',
+        baseHp: 10360, baseAtk: 299, baseDef: 630, ascStat: 'em', ascVal: 115.2,
+        passiveDesc: 'Illumination de la Compassion : +250 Maîtrise Élém. au personnage actif',
+        teamBuff: { em: 250 },
+        skills: [
+          { name: 'Tri-Karma Purification (Proc)', mult: 2.20, stat: 'atk', hits: 6, defaultReaction: 'spread' }
+        ]
+      },
+      yelan: {
+        id: 'yelan', name: 'Yelan', element: 'Hydro', weaponType: 'Bow',
+        baseHp: 14450, baseAtk: 244, baseDef: 548, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: 'Adaptation Aisée : +25% Bonus DGT moyen au personnage déployé',
+        teamBuff: { dmg: 0.25 },
+        skills: [
+          { name: 'Dé Exquis (Salve 3 dés)', mult: 0.0877, stat: 'hp', hits: 12, defaultReaction: 'none' },
+          { name: 'Compétence : Ligne de Vie', mult: 0.407, stat: 'hp', hits: 1, defaultReaction: 'vape' }
+        ]
+      },
+      xiangling: {
+        id: 'xiangling', name: 'Xiangling', element: 'Pyro', weaponType: 'Polearm',
+        baseHp: 10875, baseAtk: 225, baseDef: 669, ascStat: 'em', ascVal: 96,
+        passiveDesc: 'Piment de Guoba : +10% ATQ et +15% DGT Pyro (C6)',
+        teamBuff: { atk_p: 0.10, dmg: 0.15 },
+        skills: [
+          { name: 'Pyrotation (1 tour)', mult: 2.38, stat: 'atk', hits: 10, defaultReaction: 'vape' },
+          { name: 'Guoba (Crachat)', mult: 2.00, stat: 'atk', hits: 3, defaultReaction: 'none' }
+        ]
+      },
+      xingqiu: {
+        id: 'xingqiu', name: 'Xingqiu', element: 'Hydro', weaponType: 'Sword',
+        baseHp: 10222, baseAtk: 202, baseDef: 758, ascStat: 'atk_p', ascVal: 0.24,
+        passiveDesc: "Pluie d'Épées : Réduction DGT & Hydro appliqué",
+        teamBuff: {},
+        skills: [
+          { name: "Pluie d'Épées (Salve)", mult: 0.97, stat: 'atk', hits: 15, defaultReaction: 'none' },
+          { name: 'Compétence : Pluie battante', mult: 3.40, stat: 'atk', hits: 2, defaultReaction: 'vape' }
+        ]
+      },
+      fischl: {
+        id: 'fischl', name: 'Fischl', element: 'Electro', weaponType: 'Bow',
+        baseHp: 9189, baseAtk: 244, baseDef: 594, ascStat: 'atk_p', ascVal: 0.24,
+        passiveDesc: 'Foudre Châtiment (A4) : Dégâts Électro supplémentaires sur réaction',
+        teamBuff: {},
+        skills: [
+          { name: 'Oz (Attaque normale)', mult: 1.78, stat: 'atk', hits: 10, defaultReaction: 'aggravate' },
+          { name: 'A4 : Foudre du Jugement', mult: 0.80, stat: 'atk', hits: 6, defaultReaction: 'aggravate' }
+        ]
+      }
+    };
+
+    const WEAPONS = [
+      { id: 'scepter_north', name: "Sceptre de l'Étoile Boréale (5★)", type: 'Catalyst', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { cr: 0.12, dmg: 0.32 } },
+      { id: 'tome_eternal', name: 'Tome du Flux Éternel (5★)', type: 'Catalyst', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.42 } },
+      { id: 'thousand_dreams', name: 'Mille Rêves Flottants (5★)', type: 'Catalyst', baseAtk: 542, subStat: 'em', subVal: 265, bonus: { em: 96, dmg: 0.20 } },
+      { id: 'widsith', name: 'Mouvement Vagabond R5 (4★)', type: 'Catalyst', baseAtk: 510, subStat: 'cd', subVal: 0.551, bonus: { dmg: 0.48 } },
+      { id: 'splendor', name: 'Splendeur des Eaux Calmes (5★)', type: 'Sword', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.28, dmg: 0.24 } },
+      { id: 'mistsplitter', name: 'Reflet de Tranche-Brume (5★)', type: 'Sword', baseAtk: 674, subStat: 'cd', subVal: 0.441, bonus: { dmg: 0.40 } },
+      { id: 'freedom_sworn', name: 'Serment de la Liberté (5★)', type: 'Sword', baseAtk: 608, subStat: 'em', subVal: 198, bonus: { atk_p: 0.20, dmg: 0.16 } },
+      { id: 'favonius_sword', name: 'Épée de Favonius (4★)', type: 'Sword', baseAtk: 454, subStat: 'er', subVal: 0.613, bonus: {} },
+      { id: 'crimson_moon', name: 'Semblance de la Lune Écarlate (5★)', type: 'Polearm', baseAtk: 674, subStat: 'cr', subVal: 0.221, bonus: { dmg: 0.36 } },
+      { id: 'homa', name: 'Bâton de Homa (5★)', type: 'Polearm', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { hp_p: 0.20, atk: 240 } },
+      { id: 'the_catch', name: '« La Prise » R5 (4★)', type: 'Polearm', baseAtk: 510, subStat: 'er', subVal: 0.459, bonus: { cr: 0.12, dmg: 0.32 } },
+      { id: 'aqua', name: "Simulacre d'Eau (5★)", type: 'Bow', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.20 } },
+      { id: 'stringless', name: 'Dernière Corde R5 (4★)', type: 'Bow', baseAtk: 510, subStat: 'em', subVal: 165, bonus: { dmg: 0.48 } }
+    ];
+
+    const ARTIFACT_SETS = {
+      marechaussee: { name: 'Chasseur de la Maréchaussée', bonus2: { dmg: 0.15 }, bonus4: { cr: 0.36 }, team4: {} },
+      golden_troupe: { name: 'Troupe Dorée', bonus2: { dmg: 0.20 }, bonus4: { dmg: 0.50 }, team4: {} },
+      fragment_whimsy: { name: "Fragment d'Harmonie", bonus2: { atk_p: 0.18 }, bonus4: { dmg: 0.54 }, team4: {} },
+      emblem: { name: 'Emblème du Destin Brisé', bonus2: { er: 0.20 }, bonus4: { dmg: 0.45 }, team4: {} },
+      cinder_city: { name: 'Parchemin du Héros de Cendre', bonus2: {}, bonus4: { dmg: 0.12 }, team4: { dmg: 0.40 } },
+      vv: { name: 'Ombre de la Verte Chasseuse', bonus2: { dmg: 0.15 }, bonus4: {}, team4: {} },
+      noblesse: { name: 'Ancien Rituel Royal', bonus2: { dmg: 0.20 }, bonus4: {}, team4: { atk_p: 0.20 } },
+      blizzard: { name: 'Briseur de Glace', bonus2: { dmg: 0.15 }, bonus4: { cr: 0.40 }, team4: {} },
+      gilded: { name: 'Rêve Doré', bonus2: { em: 80 }, bonus4: { em: 150, atk_p: 0.14 }, team4: {} }
+    };
+
+    const MAIN_STAT_VALUES = {
+      hp: 4780, atk: 311, hp_p: 0.466, atk_p: 0.466, def_p: 0.583,
+      er: 0.518, em: 187, dmg: 0.466, cr: 0.311, cd: 0.622
+    };
+
+    const STAT_LABELS = {
+      hp: 'PV Flat', atk: 'ATQ Flat', def: 'DÉF Flat',
+      hp_p: 'PV %', atk_p: 'ATQ %', def_p: 'DÉF %',
+      er: 'Recharge Énergie', em: 'Maîtrise Élém.', dmg: 'Bonus DGT %',
+      cr: 'Taux CRIT', cd: 'DGT CRIT'
+    };
+
+    /* ============================================================================
+       2. SVG ICONS HELPER (ELEMENTS & ARTIFACT SLOTS)
+       ============================================================================ */
+    function getElementSVG(el) {
+      const icons = {
+        Cryo: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>`,
+        Hydro: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>`,
+        Pyro: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.5 3.5-1.5 5.5-1.5 5.5S13 6 14 4c2.5 2.5 4 6 4 9a6 6 0 0 1-12 0c0-3.5 2.5-7 6-11z"/></svg>`,
+        Electro: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
+        Dendro: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66l.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75C7 8 17 8 17 8Z"/></svg>`,
+        Anemo: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path stroke-linecap="round" d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>`,
+        Geo: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12l10 10 10-10L12 2zm0 4.8L17.2 12 12 17.2 6.8 12 12 6.8z"/></svg>`
+      };
+      return icons[el] || '';
+    }
+
+    function getSlotSVG(slot) {
+      const icons = {
+        flower: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2a3 3 0 0 1 3 3c0 1.5-3 4-3 4s-3-2.5-3-4a3 3 0 0 1 3-3zm0 20a3 3 0 0 1-3-3c0-1.5 3-4 3-4s3 2.5 3 4a3 3 0 0 1-3 3zM2 12a3 3 0 0 1 3-3c1.5 0 4 3 4 3s-2.5 3-4 3a3 3 0 0 1-3-3zm20 0a3 3 0 0 1-3 3c-1.5 0-4-3-4-3s2.5-3 4-3a3 3 0 0 1 3 3z"/></svg>`,
+        plume: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>`,
+        sands: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 2h14M5 22h14M6 2v6l6 4 6-4V2M6 22v-6l6-4 6 4v6"/></svg>`,
+        goblet: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2h8v7a4 4 0 0 1-8 0V2zM12 13v7M8 20h8"/></svg>`,
+        circlet: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 17l3-11 7 6 7-6 3 11H2zM4 20h16"/></svg>`
+      };
+      return icons[slot] || '';
+    }
+
+    function showToast(msg) {
+      const banner = document.getElementById('toast-banner');
+      document.getElementById('toast-msg').textContent = msg;
+      banner.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => banner.classList.add('hidden'), 3200);
+    }
+
+    /* ============================================================================
+       3. DEFAULT STATE & PRESET INVENTORY
+       ============================================================================ */
+    function generateDefaultInventory() {
+      const sets = Object.keys(ARTIFACT_SETS);
+      const slots = ['flower', 'plume', 'sands', 'goblet', 'circlet'];
+      const mainsBySlot = {
+        flower: ['hp'],
+        plume: ['atk'],
+        sands: ['atk_p', 'hp_p', 'def_p', 'er', 'em'],
+        goblet: ['dmg', 'hp_p', 'atk_p', 'def_p', 'em'],
+        circlet: ['cr', 'cd', 'hp_p', 'em']
+      };
+      const inv = [];
+      let idCounter = 1;
+
+      sets.forEach((setKey) => {
+        slots.forEach((slot) => {
+          const mainPool = mainsBySlot[slot];
+          const main = mainPool[(idCounter + slot.length) % mainPool.length];
+          const subs = [];
+          if (main !== 'cr') subs.push({ stat: 'cr', val: +(0.066 + (idCounter % 4) * 0.031).toFixed(3) });
+          if (main !== 'cd') subs.push({ stat: 'cd', val: +(0.132 + (idCounter % 5) * 0.062).toFixed(3) });
+          if (main !== 'er') subs.push({ stat: 'er', val: +(0.058 + (idCounter % 3) * 0.052).toFixed(3) });
+          subs.push({ stat: main === 'hp_p' ? 'atk_p' : 'hp_p', val: +(0.053 + (idCounter % 3) * 0.047).toFixed(3) });
+          if (subs.length < 4) subs.push({ stat: 'em', val: 21 + (idCounter % 3) * 19 });
+
+          inv.push({
+            id: 'art_' + (idCounter++),
+            set: setKey,
+            slot,
+            main,
+            subs: subs.slice(0, 4)
+          });
+        });
+      });
+      return inv;
+    }
+
+    let state = {
+      team: [
+        { charId: 'tsaritsa', weaponId: 'scepter_north', cons: 0, passiveActive: true, artifacts: { flower: 'art_36', plume: 'art_37', sands: 'art_38', goblet: 'art_39', circlet: 'art_40' } },
+        { charId: 'furina', weaponId: 'splendor', cons: 0, passiveActive: true, artifacts: { flower: 'art_6', plume: 'art_7', sands: 'art_8', goblet: 'art_9', circlet: 'art_10' } },
+        { charId: 'xilonen', weaponId: 'favonius_sword', cons: 0, passiveActive: true, artifacts: { flower: 'art_21', plume: 'art_22', sands: 'art_23', goblet: 'art_24', circlet: 'art_25' } },
+        { charId: 'bennett', weaponId: 'mistsplitter', cons: 6, passiveActive: true, artifacts: { flower: 'art_31', plume: 'art_32', sands: 'art_33', goblet: 'art_34', circlet: 'art_35' } }
+      ],
+      enemy: { lvl: 100, res: 10, shred: 40 },
+      duration: 20,
+      rotation: [
+        { slot: 1, skillIdx: 2, hits: 1, reaction: 'none' },
+        { slot: 1, skillIdx: 0, hits: 4, reaction: 'none' },
+        { slot: 2, skillIdx: 0, hits: 2, reaction: 'none' },
+        { slot: 3, skillIdx: 1, hits: 1, reaction: 'melt' },
+        { slot: 0, skillIdx: 2, hits: 1, reaction: 'melt' },
+        { slot: 0, skillIdx: 1, hits: 1, reaction: 'melt' },
+        { slot: 0, skillIdx: 0, hits: 3, reaction: 'none' }
+      ],
+      inventory: generateDefaultInventory(),
+      compare: { slotA: null, slotB: null }
+    };
+
+    const saved = localStorage.getItem('stellar_tc_state');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+      } catch (e) { console.warn('Erreur chargement sauvegarde'); }
+    }
+
+    function saveState() {
+      localStorage.setItem('stellar_tc_state', JSON.stringify(state));
+    }
+
+    /* ============================================================================
+       4. STAT & DAMAGE ENGINE
+       ============================================================================ */
+    function getResonances(teamSlots) {
+      const counts = {};
+      teamSlots.forEach(s => {
+        const el = CHARACTERS[s.charId].element;
+        counts[el] = (counts[el] || 0) + 1;
+      });
+      const active = [];
+      const buffs = { atk_p: 0, hp_p: 0, cr: 0, em: 0, dmg: 0 };
+
+      if ((counts['Pyro'] || 0) >= 2) {
+        active.push({ name: 'Résonance Pyro (+25% ATQ)', cls: 'el-pyro-badge' });
+        buffs.atk_p += 0.25;
+      }
+      if ((counts['Hydro'] || 0) >= 2) {
+        active.push({ name: 'Résonance Hydro (+25% PV)', cls: 'el-hydro-badge' });
+        buffs.hp_p += 0.25;
+      }
+      if ((counts['Cryo'] || 0) >= 2) {
+        active.push({ name: 'Résonance Cryo (+15% Taux CRIT)', cls: 'el-cryo-badge' });
+        buffs.cr += 0.15;
+      }
+      if ((counts['Dendro'] || 0) >= 2) {
+        active.push({ name: 'Résonance Dendro (+80 ME)', cls: 'el-dendro-badge' });
+        buffs.em += 80;
+      }
+      if ((counts['Geo'] || 0) >= 2) {
+        active.push({ name: 'Résonance Géo (+15% DGT)', cls: 'el-geo-badge' });
+        buffs.dmg += 0.15;
+      }
+      if (Object.keys(counts).length === 4) {
+        active.push({ name: 'Voûte Protectrice (4 Élém.)', cls: 'el-anemo-badge' });
+      }
+      return { active, buffs };
+    }
+
+    function getTeamWideBuffs(teamSlots) {
+      const { active: resList, buffs: resBuffs } = getResonances(teamSlots);
+      const total = { atk: 0, atk_p: resBuffs.atk_p, hp_p: resBuffs.hp_p, cr: resBuffs.cr, cd: 0, em: resBuffs.em, dmg: resBuffs.dmg, er: 0 };
+      const sources = [];
+
+      teamSlots.forEach((slot) => {
+        const c = CHARACTERS[slot.charId];
+        if (slot.passiveActive && c.teamBuff) {
+          Object.entries(c.teamBuff).forEach(([k, v]) => { total[k] = (total[k] || 0) + v; });
+          sources.push(`${c.name} : ${c.passiveDesc}`);
+        }
+        const setCounts = {};
+        Object.values(slot.artifacts).forEach(artId => {
+          const art = state.inventory.find(a => a.id === artId);
+          if (art) setCounts[art.set] = (setCounts[art.set] || 0) + 1;
+        });
+        Object.entries(setCounts).forEach(([setKey, count]) => {
+          if (count >= 4 && ARTIFACT_SETS[setKey]?.team4) {
+            const t4 = ARTIFACT_SETS[setKey].team4;
+            if (Object.keys(t4).length > 0) {
+              Object.entries(t4).forEach(([k, v]) => { total[k] = (total[k] || 0) + v; });
+              sources.push(`Set 4p ${ARTIFACT_SETS[setKey].name} (${c.name})`);
+            }
+          }
+        });
+      });
+
+      return { total, resList, sources };
+    }
+
+    function computeCharStats(slotIndex, customArtifacts = null) {
+      const slot = state.team[slotIndex];
+      const char = CHARACTERS[slot.charId];
+      const weap = WEAPONS.find(w => w.id === slot.weaponId) || WEAPONS[0];
+      const { total: teamBuffs } = getTeamWideBuffs(state.team);
+
+      const baseAtk = char.baseAtk + weap.baseAtk;
+      const baseHp = char.baseHp;
+      const baseDef = char.baseDef;
+
+      const mods = {
+        hp: 0, hp_p: teamBuffs.hp_p,
+        atk: teamBuffs.atk, atk_p: teamBuffs.atk_p,
+        def: 0, def_p: 0,
+        cr: 0.05 + teamBuffs.cr,
+        cd: 0.50 + teamBuffs.cd,
+        em: teamBuffs.em,
+        er: 1.0 + teamBuffs.er,
+        dmg: teamBuffs.dmg
+      };
+
+      mods[char.ascStat] = (mods[char.ascStat] || 0) + char.ascVal;
+      mods[weap.subStat] = (mods[weap.subStat] || 0) + weap.subVal;
+      if (weap.bonus) {
+        Object.entries(weap.bonus).forEach(([k, v]) => { mods[k] = (mods[k] || 0) + v; });
+      }
+
+      const eq = customArtifacts || slot.artifacts;
+      const setCounts = {};
+      Object.values(eq).forEach(artId => {
+        const art = state.inventory.find(a => a.id === artId);
+        if (!art) return;
+        setCounts[art.set] = (setCounts[art.set] || 0) + 1;
+        mods[art.main] = (mods[art.main] || 0) + MAIN_STAT_VALUES[art.main];
+        art.subs.forEach(s => {
+          mods[s.stat] = (mods[s.stat] || 0) + s.val;
+        });
+      });
+
+      const activeSets = [];
+      Object.entries(setCounts).forEach(([setKey, count]) => {
+        const setObj = ARTIFACT_SETS[setKey];
+        if (!setObj) return;
+        if (count >= 2) {
+          activeSets.push(`${setObj.name} (${count >= 4 ? '4p' : '2p'})`);
+          Object.entries(setObj.bonus2 || {}).forEach(([k, v]) => { mods[k] = (mods[k] || 0) + v; });
+        }
+        if (count >= 4) {
+          Object.entries(setObj.bonus4 || {}).forEach(([k, v]) => { mods[k] = (mods[k] || 0) + v; });
+        }
+      });
+
+      const finalHp = baseHp * (1 + mods.hp_p) + mods.hp;
+      const finalAtk = baseAtk * (1 + mods.atk_p) + mods.atk;
+      const finalDef = baseDef * (1 + mods.def_p) + mods.def;
+      const finalCr = Math.min(1, Math.max(0, mods.cr));
+      const finalCd = mods.cd;
+
+      return {
+        hp: finalHp, atk: finalAtk, def: finalDef,
+        cr: finalCr, cd: finalCd, em: mods.em, er: mods.er, dmg: mods.dmg,
+        activeSets
+      };
+    }
+
+    function calculateHitDamage(stats, skill, reaction, enemy) {
+      const scalingStat = skill.stat === 'hp' ? stats.hp : (skill.stat === 'def' ? stats.def : stats.atk);
+      let baseDmg = scalingStat * skill.mult;
+
+      const lvlMult = 1446.85;
+      const emBonusAdditive = (5 * stats.em) / (stats.em + 1200);
+      if (reaction === 'aggravate') {
+        baseDmg += lvlMult * 1.15 * (1 + emBonusAdditive);
+      } else if (reaction === 'spread') {
+        baseDmg += lvlMult * 1.25 * (1 + emBonusAdditive);
+      }
+
+      const dmgMult = 1 + stats.dmg;
+
+      let ampMult = 1.0;
+      const emBonusAmp = (2.78 * stats.em) / (stats.em + 1400);
+      if (reaction === 'vape_pyro' || reaction === 'melt_cryo') {
+        ampMult = 1.5 * (1 + emBonusAmp);
+      } else if (reaction === 'vape_hydro' || reaction === 'melt_pyro' || reaction === 'vape' || reaction === 'melt') {
+        ampMult = 2.0 * (1 + emBonusAmp);
+      }
+
+      const charLvl = 90;
+      const defMult = (charLvl + 100) / ((charLvl + 100) + (enemy.lvl + 100));
+      const netRes = (enemy.res - enemy.shred) / 100;
+      let resMult = 1 - netRes;
+      if (netRes < 0) resMult = 1 - netRes / 2;
+      else if (netRes >= 0.75) resMult = 1 / (4 * netRes + 1);
+
+      const nonCrit = baseDmg * dmgMult * ampMult * defMult * resMult;
+      const crit = nonCrit * (1 + stats.cd);
+      const avg = nonCrit * (1 + stats.cr * stats.cd);
+
+      return { nonCrit, crit, avg };
+    }
+
+    /* ============================================================================
+       5. UI RENDERING
+       ============================================================================ */
+    function formatNum(n) {
+      return Math.round(n).toLocaleString('fr-FR');
+    }
+
+    function renderTeamCards() {
+      const container = document.getElementById('team-cards');
+      container.innerHTML = '';
+
+      state.team.forEach((slot, idx) => {
+        const char = CHARACTERS[slot.charId];
+        const stats = computeCharStats(idx);
+        const compatibleWeapons = WEAPONS.filter(w => w.type === char.weaponType);
+        const elLower = char.element.toLowerCase();
+
+        const card = document.createElement('div');
+        card.className = `surface-card rounded-2xl overflow-hidden flex flex-col justify-between el-${elLower}-ring transition-transform duration-150 hover:-translate-y-0.5`;
+        card.innerHTML = `
+          <div>
+            <!-- Elemental Gradient Top Banner -->
+            <div class="el-${elLower}-banner px-4 py-3 flex items-center justify-between gap-2">
+              <span class="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg border el-${elLower}-badge">
+                ${getElementSVG(char.element)}
+                ${char.element}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <select data-idx="${idx}" class="sel-cons rounded-lg px-2 py-1 text-[11px] font-bold mono text-[#d3bc8e]">
+                  ${[0,1,2,3,4,5,6].map(c => `<option value="${c}" ${slot.cons === c ? 'selected' : ''}>C${c}</option>`).join('')}
+                </select>
+                <button data-idx="${idx}" class="btn-detail px-2.5 py-1 rounded-lg bg-[#0d111b]/80 hover:bg-[#0d111b] text-[11px] font-semibold text-white border border-white/15 transition">
+                  Build
+                </button>
+              </div>
+            </div>
+
+            <!-- Character & Weapon Selectors -->
+            <div class="p-4 space-y-2.5">
+              <div>
+                <label class="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Personnage #${idx + 1}</label>
+                <select data-idx="${idx}" class="sel-char w-full rounded-xl px-3 py-2 text-sm font-display font-bold text-white">
+                  ${Object.values(CHARACTERS).map(c => `<option value="${c.id}" ${c.id === slot.charId ? 'selected' : ''}>${c.name}</option>`).join('')}
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Arme (${char.weaponType})</label>
+                <select data-idx="${idx}" class="sel-weap w-full rounded-xl px-3 py-1.5 text-xs text-slate-200">
+                  ${compatibleWeapons.map(w => `<option value="${w.id}" ${w.id === slot.weaponId ? 'selected' : ''}>${w.name}</option>`).join('')}
+                </select>
+              </div>
+
+              <label class="flex items-start gap-2.5 text-[11px] text-slate-300 bg-[#0d111b]/80 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:border-[#d3bc8e]/30 transition">
+                <input type="checkbox" data-idx="${idx}" class="chk-passive mt-0.5 accent-[#d3bc8e]" ${slot.passiveActive ? 'checked' : ''} />
+                <span class="leading-snug">${char.passiveDesc}</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Compact Attribute Grid -->
+          <div class="px-4 pb-4 space-y-2.5">
+            <div class="grid grid-cols-3 gap-1.5 text-[11px] mono">
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">PV Max</div>
+                <div class="text-slate-100 font-semibold">${formatNum(stats.hp)}</div>
+              </div>
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">ATQ</div>
+                <div class="text-slate-100 font-semibold">${formatNum(stats.atk)}</div>
+              </div>
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">DÉF</div>
+                <div class="text-slate-100 font-semibold">${formatNum(stats.def)}</div>
+              </div>
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">CRIT</div>
+                <div class="text-[#d3bc8e] font-bold">${(stats.cr * 100).toFixed(0)}% / ${(stats.cd * 100).toFixed(0)}%</div>
+              </div>
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">RE / ME</div>
+                <div class="text-sky-300 font-semibold">${(stats.er * 100).toFixed(0)}% / ${Math.round(stats.em)}</div>
+              </div>
+              <div class="bg-[#0d111b] border border-white/[0.05] px-2 py-1.5 rounded-lg">
+                <div class="text-slate-500 text-[9px] font-sans uppercase">Bonus DGT</div>
+                <div class="text-emerald-400 font-semibold">+${(stats.dmg * 100).toFixed(1)}%</div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] bg-[#0d111b]/90 px-2.5 py-1.5 rounded-lg border border-white/[0.05]">
+              <span class="text-slate-400 truncate max-w-[185px]">${stats.activeSets.length ? stats.activeSets.join(' + ') : 'Aucun bonus de set'}</span>
+              <button data-idx="${idx}" class="btn-detail text-[#d3bc8e] hover:underline font-semibold shrink-0 ml-1">Artéfacts →</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.querySelectorAll('.sel-char').forEach(el => el.addEventListener('change', e => {
+        const idx = +e.target.dataset.idx;
+        const newChar = CHARACTERS[e.target.value];
+        state.team[idx].charId = newChar.id;
+        const firstWeap = WEAPONS.find(w => w.type === newChar.weaponType);
+        if (firstWeap) state.team[idx].weaponId = firstWeap.id;
+        saveState();
+        refreshAll();
+      }));
+
+      document.querySelectorAll('.sel-weap').forEach(el => el.addEventListener('change', e => {
+        state.team[+e.target.dataset.idx].weaponId = e.target.value;
+        saveState();
+        refreshAll();
+      }));
+
+      document.querySelectorAll('.sel-cons').forEach(el => el.addEventListener('change', e => {
+        state.team[+e.target.dataset.idx].cons = +e.target.value;
+        saveState();
+        refreshAll();
+      }));
+
+      document.querySelectorAll('.chk-passive').forEach(el => el.addEventListener('change', e => {
+        state.team[+e.target.dataset.idx].passiveActive = e.target.checked;
+        saveState();
+        refreshAll();
+      }));
+
+      document.querySelectorAll('.btn-detail').forEach(el => el.addEventListener('click', e => {
+        openCharModal(+e.target.dataset.idx);
+      }));
+    }
+
+    function renderBuffsAndResonances() {
+      const { resList, sources } = getTeamWideBuffs(state.team);
+      const resEl = document.getElementById('resonances-list');
+      resEl.innerHTML = resList.length
+        ? resList.map(r => `<span class="text-[11px] font-bold px-3 py-1 rounded-lg border ${r.cls}">${r.name}</span>`).join('')
+        : '<span class="text-xs text-slate-500">Aucune résonance élémentaire active</span>';
+
+      const buffsEl = document.getElementById('team-buffs-list');
+      buffsEl.innerHTML = sources.map(s => `
+        <div class="text-[11px] bg-[#0d111b]/90 border border-white/[0.06] rounded-xl px-3 py-2 text-slate-300 flex items-center gap-2">
+          <span class="text-emerald-400 text-xs">✦</span>
+          <span class="truncate" title="${s}">${s}</span>
+        </div>
+      `).join('');
+      document.getElementById('active-buff-count').textContent = `${sources.length} buff(s)`;
+    }
+
+    function renderRotation() {
+      const tbody = document.getElementById('rotation-tbody');
+      tbody.innerHTML = '';
+
+      let totalRotationDmg = 0;
+      const charTotals = [0, 0, 0, 0];
+
+      state.rotation.forEach((act, rIdx) => {
+        const slot = state.team[act.slot];
+        const char = CHARACTERS[slot.charId];
+        const skill = char.skills[act.skillIdx] || char.skills[0];
+        const stats = computeCharStats(act.slot);
+        const dmg = calculateHitDamage(stats, skill, act.reaction, state.enemy);
+
+        const rowTotal = dmg.avg * act.hits;
+        totalRotationDmg += rowTotal;
+        charTotals[act.slot] += rowTotal;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/[0.03] transition';
+        tr.innerHTML = `
+          <td class="py-2.5 px-3">
+            <select data-ridx="${rIdx}" class="rot-slot rounded-lg px-2.5 py-1.5 text-white font-semibold">
+              ${state.team.map((s, i) => `<option value="${i}" ${i === act.slot ? 'selected' : ''}>${CHARACTERS[s.charId].name}</option>`).join('')}
+            </select>
+          </td>
+          <td class="py-2.5 px-3">
+            <select data-ridx="${rIdx}" class="rot-skill rounded-lg px-2.5 py-1.5 text-slate-200 max-w-[240px]">
+              ${char.skills.map((sk, si) => `<option value="${si}" ${si === act.skillIdx ? 'selected' : ''}>${sk.name}</option>`).join('')}
+            </select>
+          </td>
+          <td class="py-2.5 px-3 text-center">
+            <input type="number" min="1" max="50" value="${act.hits}" data-ridx="${rIdx}" class="rot-hits w-14 rounded-lg px-2 py-1.5 text-white mono text-center" />
+          </td>
+          <td class="py-2.5 px-3">
+            <select data-ridx="${rIdx}" class="rot-react rounded-lg px-2.5 py-1.5 text-slate-200">
+              <option value="none" ${act.reaction === 'none' ? 'selected' : ''}>Aucune</option>
+              <option value="vape_pyro" ${act.reaction === 'vape_pyro' ? 'selected' : ''}>Évaporation (x1.5)</option>
+              <option value="vape" ${act.reaction === 'vape' ? 'selected' : ''}>Évaporation (x2.0)</option>
+              <option value="melt_cryo" ${act.reaction === 'melt_cryo' ? 'selected' : ''}>Fonte (x1.5)</option>
+              <option value="melt" ${act.reaction === 'melt' ? 'selected' : ''}>Fonte (x2.0)</option>
+              <option value="aggravate" ${act.reaction === 'aggravate' ? 'selected' : ''}>Suractivation</option>
+              <option value="spread" ${act.reaction === 'spread' ? 'selected' : ''}>Propagation</option>
+            </select>
+          </td>
+          <td class="py-2.5 px-3 text-right mono text-slate-400">${formatNum(dmg.nonCrit)}</td>
+          <td class="py-2.5 px-3 text-right mono text-[#d3bc8e]">${formatNum(dmg.crit)}</td>
+          <td class="py-2.5 px-3 text-right mono font-bold text-white">${formatNum(rowTotal)}</td>
+          <td class="py-2.5 px-3 text-center">
+            <button data-ridx="${rIdx}" class="rot-del w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 font-bold transition">✕</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const dps = totalRotationDmg / (state.duration || 20);
+      const formattedRot = formatNum(totalRotationDmg);
+      const formattedDps = formatNum(dps) + ' /s';
+
+      document.getElementById('total-rot-dmg').textContent = formattedRot;
+      document.getElementById('total-team-dps').textContent = formattedDps;
+      document.getElementById('sidebar-dps-val').textContent = formattedDps;
+      document.getElementById('sidebar-rot-val').textContent = formattedRot;
+      document.getElementById('topbar-dps-badge').textContent = formattedDps;
+
+      const netResDisplay = state.enemy.res - state.enemy.shred;
+      document.getElementById('topbar-enemy-badge').textContent = `Niv.${state.enemy.lvl} • RÉS ${netResDisplay >= 0 ? '+' : ''}${netResDisplay}%`;
+
+      // DPS Share Bar
+      const colors = ['bg-sky-400', 'bg-[#d3bc8e]', 'bg-indigo-400', 'bg-rose-400'];
+      const bar = document.getElementById('dps-bar');
+      const labels = document.getElementById('dps-share-labels');
+      bar.innerHTML = '';
+      const labelParts = [];
+
+      charTotals.forEach((val, idx) => {
+        const pct = totalRotationDmg > 0 ? (val / totalRotationDmg) * 100 : 25;
+        const seg = document.createElement('div');
+        seg.className = `${colors[idx]} h-full rounded-full transition-all duration-300`;
+        seg.style.width = `${pct}%`;
+        bar.appendChild(seg);
+        labelParts.push(`${CHARACTERS[state.team[idx].charId].name} (${pct.toFixed(1)}%)`);
+      });
+      labels.textContent = labelParts.join('  •  ');
+
+      // Listeners
+      document.querySelectorAll('.rot-slot').forEach(el => el.addEventListener('change', e => {
+        const rIdx = +e.target.dataset.ridx;
+        state.rotation[rIdx].slot = +e.target.value;
+        state.rotation[rIdx].skillIdx = 0;
+        saveState();
+        renderRotation();
+      }));
+      document.querySelectorAll('.rot-skill').forEach(el => el.addEventListener('change', e => {
+        const rIdx = +e.target.dataset.ridx;
+        const sIdx = +e.target.value;
+        state.rotation[rIdx].skillIdx = sIdx;
+        const c = CHARACTERS[state.team[state.rotation[rIdx].slot].charId];
+        state.rotation[rIdx].reaction = c.skills[sIdx].defaultReaction || 'none';
+        saveState();
+        renderRotation();
+      }));
+      document.querySelectorAll('.rot-hits').forEach(el => el.addEventListener('change', e => {
+        state.rotation[+e.target.dataset.ridx].hits = Math.max(1, +e.target.value);
+        saveState();
+        renderRotation();
+      }));
+      document.querySelectorAll('.rot-react').forEach(el => el.addEventListener('change', e => {
+        state.rotation[+e.target.dataset.ridx].reaction = e.target.value;
+        saveState();
+        renderRotation();
+      }));
+      document.querySelectorAll('.rot-del').forEach(el => el.addEventListener('click', e => {
+        state.rotation.splice(+e.target.dataset.ridx, 1);
+        saveState();
+        renderRotation();
+      }));
+    }
+
+    /* ============================================================================
+       6. ARTIFACT OPTIMIZER
+       ============================================================================ */
+    function populateOptimizerSelectors() {
+      const charSel = document.getElementById('opt-char-slot');
+      const prevVal = charSel.value;
+      charSel.innerHTML = state.team.map((s, i) => `<option value="${i}">${CHARACTERS[s.charId].name}</option>`).join('');
+      if (prevVal && prevVal < state.team.length) charSel.value = prevVal;
+
+      const updateSkillOptions = () => {
+        const idx = +charSel.value;
+        const c = CHARACTERS[state.team[idx].charId];
+        document.getElementById('opt-skill-idx').innerHTML = c.skills.map((sk, si) => `<option value="${si}">${sk.name}</option>`).join('');
+      };
+      charSel.onchange = updateSkillOptions;
+      updateSkillOptions();
+
+      const setSel = document.getElementById('opt-force-set');
+      setSel.innerHTML = `<option value="any">N'importe quel set (Meilleures stats)</option>` +
+        Object.entries(ARTIFACT_SETS).map(([k, v]) => `<option value="${k}">4p ${v.name}</option>`).join('');
+    }
+
+    function runOptimizer() {
+      const slotIdx = +document.getElementById('opt-char-slot').value;
+      const skillIdx = +document.getElementById('opt-skill-idx').value;
+      const minEr = (+document.getElementById('opt-min-er').value) / 100;
+      const forceSet = document.getElementById('opt-force-set').value;
+
+      const char = CHARACTERS[state.team[slotIdx].charId];
+      const skill = char.skills[skillIdx];
+
+      const bySlot = {
+        flower: state.inventory.filter(a => a.slot === 'flower'),
+        plume: state.inventory.filter(a => a.slot === 'plume'),
+        sands: state.inventory.filter(a => a.slot === 'sands'),
+        goblet: state.inventory.filter(a => a.slot === 'goblet'),
+        circlet: state.inventory.filter(a => a.slot === 'circlet')
+      };
+
+      const topBuilds = [];
+      let combinationsTested = 0;
+
+      for (const f of bySlot.flower) {
+        for (const p of bySlot.plume) {
+          for (const s of bySlot.sands) {
+            for (const g of bySlot.goblet) {
+              for (const c of bySlot.circlet) {
+                combinationsTested++;
+                const eq = { flower: f.id, plume: p.id, sands: s.id, goblet: g.id, circlet: c.id };
+                if (forceSet !== 'any') {
+                  const count = [f, p, s, g, c].filter(x => x.set === forceSet).length;
+                  if (count < 4) continue;
+                }
+                const stats = computeCharStats(slotIdx, eq);
+                if (stats.er < minEr) continue;
+
+                const dmg = calculateHitDamage(stats, skill, skill.defaultReaction || 'none', state.enemy);
+                topBuilds.push({ eq, stats, dmg });
+              }
+            }
+          }
+        }
+      }
+
+      topBuilds.sort((a, b) => b.dmg.avg - a.dmg.avg);
+      const best5 = topBuilds.slice(0, 5);
+      const container = document.getElementById('opt-results');
+
+      if (!best5.length) {
+        container.innerHTML = `<div class="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-200 text-xs">
+          Aucune combinaison ne respecte vos contraintes (${combinationsTested.toLocaleString('fr-FR')} évaluées). Essayez d'abaisser le seuil de Recharge d'Énergie.
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+          <span>${combinationsTested.toLocaleString('fr-FR')} combinaisons analysées</span>
+          <span class="text-[#d3bc8e] font-semibold">Top ${best5.length} Builds</span>
+        </div>
+        ${best5.map((b, rank) => `
+          <div class="bg-[#0d111b] border ${rank === 0 ? 'border-[#d3bc8e]/50' : 'border-white/[0.07]'} rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 hover:border-[#d3bc8e]/40 transition">
+            <div class="space-y-1.5">
+              <div class="flex items-center gap-2.5">
+                <span class="px-2.5 py-0.5 rounded-lg ${rank === 0 ? 'bg-[#d3bc8e] text-slate-950' : 'bg-white/10 text-slate-200'} font-extrabold text-xs mono">#${rank + 1}</span>
+                <span class="text-xs font-bold text-white">${b.stats.activeSets.join(' + ') || 'Build Hybride'}</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mono flex flex-wrap gap-x-3 gap-y-1">
+                <span>PV <strong class="text-slate-200">${formatNum(b.stats.hp)}</strong></span>
+                <span>ATQ <strong class="text-slate-200">${formatNum(b.stats.atk)}</strong></span>
+                <span>DÉF <strong class="text-slate-200">${formatNum(b.stats.def)}</strong></span>
+                <span>CRIT <strong class="text-[#d3bc8e]">${(b.stats.cr*100).toFixed(1)}% / ${(b.stats.cd*100).toFixed(1)}%</strong></span>
+                <span>RE <strong class="text-sky-300">${(b.stats.er*100).toFixed(0)}%</strong></span>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="text-right">
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">Dégâts Moyens</div>
+                <div class="text-base font-extrabold text-emerald-400 mono">${formatNum(b.dmg.avg)}</div>
+              </div>
+              <button data-rank="${rank}" class="btn-equip-opt px-3.5 py-2 rounded-xl bg-[#d3bc8e] hover:brightness-110 text-slate-950 text-xs font-extrabold transition">
+                Équiper
+              </button>
+            </div>
+          </div>
+        `).join('')}
+      `;
+
+      document.querySelectorAll('.btn-equip-opt').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const build = best5[+e.target.dataset.rank];
+          state.team[slotIdx].artifacts = { ...build.eq };
+          saveState();
+          refreshAll();
+          btn.textContent = '✓ Équipé';
+          btn.classList.remove('bg-[#d3bc8e]', 'text-slate-950');
+          btn.classList.add('bg-emerald-500', 'text-slate-950');
+          showToast(`Build #${+e.target.dataset.rank + 1} équipé sur ${char.name}`);
+        });
+      });
+    }
+
+    /* ============================================================================
+       7. INVENTORY & COMPARE A/B
+       ============================================================================ */
+    function initInventoryForm() {
+      const setSel = document.getElementById('art-set');
+      setSel.innerHTML = Object.entries(ARTIFACT_SETS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+
+      const subContainer = document.getElementById('substats-inputs');
+      const subOptions = ['cr', 'cd', 'atk_p', 'hp_p', 'def_p', 'er', 'em'];
+      const defaults = [
+        { stat: 'cr', val: 10.5 },
+        { stat: 'cd', val: 21.0 },
+        { stat: 'er', val: 11.0 },
+        { stat: 'atk_p', val: 9.9 }
+      ];
+
+      subContainer.innerHTML = defaults.map((d) => `
+        <div class="grid grid-cols-2 gap-2">
+          <select class="sub-stat-key rounded-lg px-2.5 py-1.5 text-white">
+            ${subOptions.map(k => `<option value="${k}" ${k === d.stat ? 'selected' : ''}>${STAT_LABELS[k]}</option>`).join('')}
+          </select>
+          <input type="number" step="0.1" value="${d.val}" class="sub-stat-val rounded-lg px-2.5 py-1.5 text-white mono" />
+        </div>
+      `).join('');
+
+      document.getElementById('form-add-art').addEventListener('submit', e => {
+        e.preventDefault();
+        const keys = document.querySelectorAll('.sub-stat-key');
+        const vals = document.querySelectorAll('.sub-stat-val');
+        const subs = [];
+        keys.forEach((kEl, i) => {
+          const stat = kEl.value;
+          let rawVal = parseFloat(vals[i].value) || 0;
+          if (stat !== 'em' && stat !== 'hp' && stat !== 'atk') rawVal = rawVal / 100;
+          if (rawVal > 0) subs.push({ stat, val: rawVal });
+        });
+
+        state.inventory.unshift({
+          id: 'art_' + Date.now(),
+          set: document.getElementById('art-set').value,
+          slot: document.getElementById('art-slot').value,
+          main: document.getElementById('art-main').value,
+          subs
+        });
+        saveState();
+        renderInventory();
+        showToast('Nouvel artéfact 5★ ajouté à l\'inventaire');
+      });
+    }
+
+    function renderInventory() {
+      document.getElementById('inv-count').textContent = state.inventory.length;
+      const filter = document.getElementById('filter-slot').value;
+      const grid = document.getElementById('inventory-grid');
+      const items = filter === 'all' ? state.inventory : state.inventory.filter(a => a.slot === filter);
+
+      const slotNames = { flower: 'Fleur', plume: 'Plume', sands: 'Sablier', goblet: 'Coupe', circlet: 'Diadème' };
+
+      grid.innerHTML = items.map(art => {
+        const isPct = !['hp', 'atk', 'em'].includes(art.main);
+        const mainDisplay = isPct ? (MAIN_STAT_VALUES[art.main] * 100).toFixed(1) + '%' : MAIN_STAT_VALUES[art.main];
+        return `
+          <div class="bg-[#0e121c] border border-amber-500/25 rounded-xl overflow-hidden flex flex-col justify-between hover:border-amber-400/50 transition">
+            <div>
+              <div class="rarity-5-header px-3 py-2 flex items-center justify-between">
+                <span class="inline-flex items-center gap-1.5 text-[10px] text-amber-300 font-extrabold uppercase tracking-wider">
+                  ${getSlotSVG(art.slot)}
+                  ${slotNames[art.slot]}
+                </span>
+                <button data-id="${art.id}" class="btn-del-art text-[10px] text-slate-400 hover:text-rose-400 font-semibold transition">Suppr.</button>
+              </div>
+              <div class="p-3 pb-2">
+                <div class="text-xs font-bold text-white truncate" title="${ARTIFACT_SETS[art.set]?.name || art.set}">${ARTIFACT_SETS[art.set]?.name || art.set}</div>
+                <div class="mt-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-400/20 flex items-center justify-between">
+                  <span class="text-[11px] text-amber-200/90 font-medium">${STAT_LABELS[art.main]}</span>
+                  <span class="text-xs font-extrabold text-amber-300 mono">${mainDisplay}</span>
+                </div>
+              </div>
+            </div>
+            <ul class="px-3 pb-3 text-[11px] text-slate-300 space-y-1 border-t border-white/[0.05] pt-2 mono">
+              ${art.subs.map(s => {
+                const subPct = !['hp', 'atk', 'em'].includes(s.stat);
+                return `<li class="flex justify-between">
+                  <span class="text-slate-400 font-sans">• ${STAT_LABELS[s.stat]}</span>
+                  <span class="text-slate-200">+${subPct ? (s.val * 100).toFixed(1) + '%' : Math.round(s.val)}</span>
+                </li>`;
+              }).join('')}
+            </ul>
+          </div>
+        `;
+      }).join('');
+
+      document.querySelectorAll('.btn-del-art').forEach(btn => btn.addEventListener('click', e => {
+        const id = e.target.dataset.id;
+        state.inventory = state.inventory.filter(a => a.id !== id);
+        saveState();
+        renderInventory();
+      }));
+    }
+
+    function snapshotCurrentBuild() {
+      let total = 0;
+      state.rotation.forEach(act => {
+        const char = CHARACTERS[state.team[act.slot].charId];
+        const skill = char.skills[act.skillIdx] || char.skills[0];
+        const stats = computeCharStats(act.slot);
+        total += calculateHitDamage(stats, skill, act.reaction, state.enemy).avg * act.hits;
+      });
+      return {
+        timestamp: new Date().toLocaleTimeString('fr-FR'),
+        teamNames: state.team.map(s => `${CHARACTERS[s.charId].name} (C${s.cons})`),
+        weapons: state.team.map(s => WEAPONS.find(w => w.id === s.weaponId)?.name),
+        totalDmg: total,
+        dps: total / (state.duration || 20)
+      };
+    }
+
+    function renderCompare() {
+      const container = document.getElementById('compare-container');
+      const { slotA, slotB } = state.compare;
+
+      const renderSlotCard = (label, data, colorCls, badgeText) => {
+        if (!data) {
+          return `<div class="surface-panel border-dashed border-white/15 rounded-2xl p-10 text-center text-xs text-slate-500">
+            Aucune configuration enregistrée dans le <strong class="text-slate-300">${label}</strong>.
+          </div>`;
+        }
+        return `
+          <div class="bg-[#0d111b] border ${colorCls} rounded-2xl p-5 space-y-4">
+            <div class="flex justify-between items-center border-b border-white/[0.06] pb-3">
+              <span class="text-sm font-bold text-white">${label}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-white/5 text-slate-400 mono">${data.timestamp}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-xs bg-[#131825] p-3.5 rounded-xl border border-white/[0.05]">
+              <div>
+                <div class="text-slate-400 text-[10px] uppercase">DGT Totaux Rotation</div>
+                <div class="text-base font-extrabold text-white mono mt-0.5">${formatNum(data.totalDmg)}</div>
+              </div>
+              <div>
+                <div class="text-slate-400 text-[10px] uppercase">DPS Moyen</div>
+                <div class="text-base font-extrabold ${badgeText} mono mt-0.5">${formatNum(data.dps)} /s</div>
+              </div>
+            </div>
+            <ul class="text-xs text-slate-300 space-y-2">
+              ${data.teamNames.map((n, i) => `
+                <li class="flex items-center justify-between bg-[#131825]/60 px-3 py-1.5 rounded-lg">
+                  <span class="font-bold text-white">${n}</span>
+                  <span class="text-[11px] text-slate-400 truncate max-w-[180px]">${data.weapons[i]}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      };
+
+      let diffHtml = '';
+      if (slotA && slotB) {
+        const diffPct = ((slotB.dps - slotA.dps) / slotA.dps) * 100;
+        const sign = diffPct >= 0 ? '+' : '';
+        const badgeCls = diffPct >= 0
+          ? 'text-emerald-300 bg-emerald-500/15 border-emerald-400/35'
+          : 'text-rose-300 bg-rose-500/15 border-rose-400/35';
+        diffHtml = `
+          <div class="md:col-span-2 p-3.5 rounded-xl border ${badgeCls} text-center text-xs font-extrabold mono">
+            Écart Slot B vs Slot A : ${sign}${diffPct.toFixed(2)}% DPS (${sign}${formatNum(slotB.dps - slotA.dps)} /s)
+          </div>
+        `;
+      }
+
+      container.innerHTML = diffHtml +
+        renderSlotCard('Slot A (Référence)', slotA, 'border-sky-500/40', 'text-sky-400') +
+        renderSlotCard('Slot B (Variante)', slotB, 'border-amber-500/40', 'text-amber-400');
+    }
+
+    function openCharModal(slotIdx) {
+      const slot = state.team[slotIdx];
+      const char = CHARACTERS[slot.charId];
+      const stats = computeCharStats(slotIdx);
+      const slotNames = { flower: 'Fleur', plume: 'Plume', sands: 'Sablier', goblet: 'Coupe', circlet: 'Diadème' };
+
+      document.getElementById('modal-title').textContent = `Équipement & Statistiques — ${char.name}`;
+      document.getElementById('modal-body').innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          ${Object.entries(slotNames).map(([sKey, sLabel]) => {
+            const matching = state.inventory.filter(a => a.slot === sKey);
+            return `
+              <div class="bg-[#0d111b] border border-white/[0.07] rounded-xl p-3">
+                <label class="flex items-center gap-1.5 text-[11px] font-bold text-[#d3bc8e] mb-1.5">
+                  ${getSlotSVG(sKey)}
+                  ${sLabel}
+                </label>
+                <select data-slot="${slotIdx}" data-akey="${sKey}" class="modal-art-sel w-full rounded-lg px-2.5 py-1.5 text-white text-xs">
+                  <option value="">-- Aucun --</option>
+                  ${matching.map(a => {
+                    const isPct = !['hp', 'atk', 'em'].includes(a.main);
+                    const mVal = isPct ? (MAIN_STAT_VALUES[a.main]*100).toFixed(1)+'%' : MAIN_STAT_VALUES[a.main];
+                    return `<option value="${a.id}" ${slot.artifacts[sKey] === a.id ? 'selected' : ''}>${ARTIFACT_SETS[a.set]?.name} (${STAT_LABELS[a.main]} ${mVal})</option>`;
+                  }).join('')}
+                </select>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div class="bg-[#0d111b] border border-[#d3bc8e]/25 rounded-xl p-4 mono text-xs grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div><div class="text-[10px] text-slate-400 font-sans">PV Max</div><div class="text-white font-bold">${formatNum(stats.hp)}</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">ATQ Totale</div><div class="text-white font-bold">${formatNum(stats.atk)}</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">DÉF Totale</div><div class="text-white font-bold">${formatNum(stats.def)}</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">Maîtrise Élém.</div><div class="text-white font-bold">${Math.round(stats.em)}</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">Taux CRIT</div><div class="text-[#d3bc8e] font-bold">${(stats.cr*100).toFixed(1)}%</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">DGT CRIT</div><div class="text-[#d3bc8e] font-bold">${(stats.cd*100).toFixed(1)}%</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">Recharge Énergie</div><div class="text-sky-300 font-bold">${(stats.er*100).toFixed(1)}%</div></div>
+          <div><div class="text-[10px] text-slate-400 font-sans">Bonus DGT</div><div class="text-emerald-400 font-bold">+${(stats.dmg*100).toFixed(1)}%</div></div>
+        </div>
+      `;
+
+      document.getElementById('char-modal').classList.remove('hidden');
+
+      document.querySelectorAll('.modal-art-sel').forEach(sel => sel.addEventListener('change', e => {
+        state.team[+e.target.dataset.slot].artifacts[e.target.dataset.akey] = e.target.value;
+        saveState();
+        refreshAll();
+        openCharModal(slotIdx);
+      }));
+    }
+
+    /* ============================================================================
+       8. INITIALIZATION & NAVIGATION
+       ============================================================================ */
+    function refreshAll() {
+      renderTeamCards();
+      renderBuffsAndResonances();
+      renderRotation();
+      populateOptimizerSelectors();
+      renderInventory();
+      renderCompare();
+    }
+
+    // Mobile Sidebar Drawer Controls
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    function openSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      backdrop.classList.remove('hidden');
+    }
+    function closeSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      backdrop.classList.add('hidden');
+    }
+    document.getElementById('btn-open-sidebar').addEventListener('click', openSidebar);
+    document.getElementById('btn-close-sidebar').addEventListener('click', closeSidebar);
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Tab Navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.className = 'tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent transition';
+        });
+        btn.className = 'tab-btn active w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-[#d3bc8e]/20 to-indigo-500/10 text-[#f3e5c8] border border-[#d3bc8e]/30 transition';
+
+        document.getElementById('topbar-title').textContent = btn.dataset.title;
+        document.getElementById('topbar-sub').textContent = btn.dataset.sub;
+
+        const target = btn.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById('tab-' + target).classList.remove('hidden');
+        closeSidebar();
+      });
+    });
+
+    // Global Inputs
+    document.getElementById('enemy-lvl').addEventListener('change', e => { state.enemy.lvl = +e.target.value; saveState(); renderRotation(); });
+    document.getElementById('enemy-res').addEventListener('change', e => { state.enemy.res = +e.target.value; saveState(); renderRotation(); });
+    document.getElementById('enemy-shred').addEventListener('change', e => { state.enemy.shred = +e.target.value; saveState(); renderRotation(); });
+    document.getElementById('rot-duration').addEventListener('change', e => { state.duration = Math.max(1, +e.target.value); saveState(); renderRotation(); });
+
+    document.getElementById('btn-add-action').addEventListener('click', () => {
+      state.rotation.push({ slot: 0, skillIdx: 0, hits: 1, reaction: 'none' });
+      saveState();
+      renderRotation();
+    });
+
+    document.getElementById('btn-run-opt').addEventListener('click', runOptimizer);
+    document.getElementById('filter-slot').addEventListener('change', renderInventory);
+    document.getElementById('btn-reset-inv').addEventListener('click', () => {
+      state.inventory = generateDefaultInventory();
+      saveState();
+      renderInventory();
+      showToast('Inventaire réinitialisé par défaut');
+    });
+
+    document.getElementById('btn-save-a').addEventListener('click', () => {
+      state.compare.slotA = snapshotCurrentBuild();
+      saveState();
+      renderCompare();
+      showToast('Configuration enregistrée dans le Slot A');
+    });
+    document.getElementById('btn-save-b').addEventListener('click', () => {
+      state.compare.slotB = snapshotCurrentBuild();
+      saveState();
+      renderCompare();
+      showToast('Configuration enregistrée dans le Slot B');
+    });
+    document.getElementById('btn-close-modal').addEventListener('click', () => document.getElementById('char-modal').classList.add('hidden'));
+
+    // Export / Import JSON
+    document.getElementById('btn-export').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'stellar-theorycraft-config.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Configuration exportée en JSON');
+    });
+
+    document.getElementById('input-import').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          state = JSON.parse(ev.target.result);
+          saveState();
+          refreshAll();
+          showToast('Configuration importée avec succès');
+        } catch (err) {
+          showToast('Erreur : Fichier JSON invalide');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Boot
+    document.getElementById('enemy-lvl').value = state.enemy.lvl;
+    document.getElementById('enemy-res').value = state.enemy.res;
+    document.getElementById('enemy-shred').value = state.enemy.shred;
+    document.getElementById('rot-duration').value = state.duration;
+
+    initInventoryForm();
+    refreshAll();
+  </script>
+</body>
+</html>
