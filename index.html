@@ -185,6 +185,16 @@
             Comparateur A/B
           </span>
         </button>
+
+        <button data-tab="icddb" data-title="Base ICD & Jauges Élémentaires" data-sub="Référentiel complet des règles d'ICD, Tags partagés et Unités de Jauge (GU)" class="tab-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-100 hover:bg-white/[0.04] border border-transparent transition">
+          <span class="flex items-center gap-2.5">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+            </svg>
+            Données ICD & GU
+          </span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/25">TCL</span>
+        </button>
       </div>
     </div>
 
@@ -347,7 +357,8 @@
                   <th class="py-3 px-3">Personnage</th>
                   <th class="py-3 px-3">Compétence / Action</th>
                   <th class="py-3 px-3 text-center">Coups</th>
-                  <th class="py-3 px-3">Réaction</th>
+                  <th class="py-3 px-3">Réaction & ICD</th>
+                  <th class="py-3 px-3 text-center">Mode ICD</th>
                   <th class="py-3 px-3 text-right">Non-CRIT</th>
                   <th class="py-3 px-3 text-right">CRIT</th>
                   <th class="py-3 px-3 text-right">Dégâts Moyens</th>
@@ -368,7 +379,7 @@
               <h2 class="text-base font-bold text-white flex items-center gap-2">
                 <span class="text-emerald-400">⚡</span> Optimiseur Combinatoire d'Artéfacts
               </h2>
-              <p class="text-xs text-slate-400">Évalue toutes les combinaisons de 5 pièces de votre inventaire pour maximiser les dégâts moyens</p>
+              <p class="text-xs text-slate-400">Évalue toutes les combinaisons de 5 pièces de votre inventaire en tenant compte de l'ICD et des jauges élémentaires</p>
             </div>
             <button id="btn-run-opt" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-950/40 transition">
               ▶ Lancer l'Optimisation
@@ -385,13 +396,70 @@
               <select id="opt-skill-idx" class="w-full rounded-lg px-3 py-2 text-white"></select>
             </div>
             <div class="surface-panel p-3 rounded-xl">
-              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Recharge d'Énergie Min. (%)</label>
-              <input type="number" id="opt-min-er" value="120" min="100" max="300" step="5" class="w-full rounded-lg px-3 py-2 text-white mono" />
-            </div>
-            <div class="surface-panel p-3 rounded-xl">
-              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Contrainte de Set (4 pièces)</label>
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Contrainte de Set</label>
               <select id="opt-force-set" class="w-full rounded-lg px-3 py-2 text-white">
                 <option value="any">N'importe quel set (Meilleures stats)</option>
+              </select>
+            </div>
+            <div class="surface-panel p-3 rounded-xl">
+              <label class="block text-slate-400 text-[11px] mb-1.5 font-medium">Réaction Cible (avec ICD)</label>
+              <select id="opt-reaction" class="w-full rounded-lg px-3 py-2 text-white">
+                <option value="default">Réaction par défaut de l'aptitude</option>
+                <option value="none">Aucune réaction (Dégâts bruts)</option>
+                <option value="vape_pyro">Évaporation (x1.5)</option>
+                <option value="vape">Évaporation (x2.0)</option>
+                <option value="melt_cryo">Fonte (x1.5)</option>
+                <option value="melt">Fonte (x2.0)</option>
+                <option value="aggravate">Suractivation</option>
+                <option value="spread">Propagation</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Advanced Stellar Optimizer Filters -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">RE Min. (%)</label>
+              <input type="number" id="opt-min-er" value="110" min="100" max="300" step="5" class="w-full rounded-lg px-2.5 py-1.5 text-white mono" />
+            </div>
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">Taux CRIT Min. (%)</label>
+              <input type="number" id="opt-min-cr" value="0" min="0" max="100" step="5" class="w-full rounded-lg px-2.5 py-1.5 text-white mono" />
+            </div>
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">ME Min.</label>
+              <input type="number" id="opt-min-em" value="0" min="0" max="1000" step="20" class="w-full rounded-lg px-2.5 py-1.5 text-white mono" />
+            </div>
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">Stat Sablier</label>
+              <select id="opt-main-sands" class="w-full rounded-lg px-2 py-1.5 text-white">
+                <option value="any">Toutes</option>
+                <option value="atk_p">ATQ %</option>
+                <option value="hp_p">PV %</option>
+                <option value="def_p">DÉF %</option>
+                <option value="er">Recharge Énergie</option>
+                <option value="em">Maîtrise Élém.</option>
+              </select>
+            </div>
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">Stat Coupe</label>
+              <select id="opt-main-goblet" class="w-full rounded-lg px-2 py-1.5 text-white">
+                <option value="any">Toutes</option>
+                <option value="dmg">Bonus DGT Élém.</option>
+                <option value="atk_p">ATQ %</option>
+                <option value="hp_p">PV %</option>
+                <option value="def_p">DÉF %</option>
+                <option value="em">Maîtrise Élém.</option>
+              </select>
+            </div>
+            <div class="surface-panel p-2.5 rounded-xl">
+              <label class="block text-slate-400 text-[10px] uppercase mb-1">Stat Diadème</label>
+              <select id="opt-main-circlet" class="w-full rounded-lg px-2 py-1.5 text-white">
+                <option value="any">Toutes</option>
+                <option value="cr">Taux CRIT</option>
+                <option value="cd">DGT CRIT</option>
+                <option value="hp_p">PV %</option>
+                <option value="em">Maîtrise Élém.</option>
               </select>
             </div>
           </div>
@@ -508,6 +576,35 @@
         </div>
       </section>
 
+      <!-- ==================== TAB 5: ICD & GAUGE DATABASE ==================== -->
+      <section id="tab-icddb" class="tab-panel hidden space-y-6">
+        <div class="surface-card rounded-2xl p-6 space-y-5">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="text-purple-400">◈</span> Base de Données des Personnages, ICD & Jauges Élémentaires
+              </h2>
+              <p class="text-xs text-slate-400">Statistiques de base au niveau 90, élévation, règles d'ICD (coups / minuterie), tags partagés et Unités de Jauge (GU)</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <input type="text" id="icddb-search" placeholder="Rechercher un personnage..." class="bg-[#101522] border border-white/10 rounded-xl px-3 py-2 text-white w-48" />
+              <select id="icddb-el-filter" class="rounded-xl px-3 py-2 text-white">
+                <option value="all">Tous les éléments</option>
+                <option value="Pyro">Pyro</option>
+                <option value="Hydro">Hydro</option>
+                <option value="Cryo">Cryo</option>
+                <option value="Electro">Electro</option>
+                <option value="Dendro">Dendro</option>
+                <option value="Anemo">Anemo</option>
+                <option value="Geo">Geo</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="icddb-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+        </div>
+      </section>
+
     </main>
   </div>
 
@@ -527,176 +624,354 @@
 
   <script>
     /* ============================================================================
-       1. DATABASE: CHARACTERS, WEAPONS, ARTIFACT SETS
+       1. DATABASE: FULL GENSHIN CHARACTERS (LVL 90 + ICD + GAUGE), WEAPONS, SETS
        ============================================================================ */
+    const ICON_CDN = 'https://enka.network/ui/';
+
     const CHARACTERS = {
       tsaritsa: {
-        id: 'tsaritsa', name: 'Tsaritsa', element: 'Cryo', weaponType: 'Catalyst',
+        id: 'tsaritsa', name: 'Tsaritsa', element: 'Cryo', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Tsaritsa',
         baseHp: 11850, baseAtk: 342, baseDef: 680, ascStat: 'cd', ascVal: 0.384,
         passiveDesc: "Décret Givré : +20% Taux CRIT et +35% DGT Cryo à toute l'équipe sous Gel/Cryo",
         teamBuff: { cr: 0.20, dmg: 0.35 },
         skills: [
-          { name: 'Attaque Normale (3 coups)', mult: 2.45, stat: 'atk', hits: 1, defaultReaction: 'none' },
-          { name: 'Compétence : Souveraineté Boréale', mult: 4.80, stat: 'atk', hits: 1, defaultReaction: 'melt' },
-          { name: 'Déchaînement : Hiver Éternel', mult: 9.60, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+          { name: 'Attaque Normale (3 coups)', mult: 2.45, stat: 'atk', hits: 3, duration: 1.8, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'na', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Compétence : Souveraineté Boréale', mult: 4.80, stat: 'atk', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 2.0, defaultReaction: 'melt' },
+          { name: 'Déchaînement : Hiver Éternel', mult: 9.60, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt' }
         ]
       },
       danica: {
-        id: 'danica', name: 'Danica', element: 'Hydro', weaponType: 'Sword',
+        id: 'danica', name: 'Danica', element: 'Hydro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Danica',
         baseHp: 13400, baseAtk: 298, baseDef: 740, ascStat: 'cr', ascVal: 0.192,
         passiveDesc: "Marée Astrale : +25% PV Max et +30% DGT de Compétence à l'équipe",
         teamBuff: { hp_p: 0.25, dmg: 0.30 },
         skills: [
-          { name: "Compétence : Lame d'Écume (Tick)", mult: 0.185, stat: 'hp', hits: 6, defaultReaction: 'vape' },
-          { name: 'Déchaînement : Déluge Stellaire', mult: 0.42, stat: 'hp', hits: 1, defaultReaction: 'vape' }
+          { name: "Compétence : Lame d'Écume (6 ticks)", mult: 0.185, stat: 'hp', hits: 6, duration: 6.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'skill', gauge: 1.0, defaultReaction: 'vape' },
+          { name: 'Déchaînement : Déluge Stellaire', mult: 0.42, stat: 'hp', hits: 1, duration: 1.2, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'vape' }
         ]
       },
       sandrone: {
-        id: 'sandrone', name: 'Sandrone', element: 'Geo', weaponType: 'Catalyst',
+        id: 'sandrone', name: 'Sandrone', element: 'Geo', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Sandrone',
         baseHp: 11200, baseAtk: 315, baseDef: 890, ascStat: 'cd', ascVal: 0.384,
         passiveDesc: 'Matrice Automatique : +240 Maîtrise Élém. et +25% DGT Géo/Cristallisation',
         teamBuff: { em: 240, dmg: 0.25 },
         skills: [
-          { name: "Compétence : Salve de l'Automate", mult: 3.10, stat: 'def', hits: 3, defaultReaction: 'none' },
-          { name: 'Déchaînement : Protocole Titan', mult: 6.40, stat: 'def', hits: 1, defaultReaction: 'none' }
+          { name: "Compétence : Salve de l'Automate", mult: 3.10, stat: 'def', hits: 3, duration: 3.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Protocole Titan', mult: 6.40, stat: 'def', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'none' }
         ]
       },
-      furina: {
-        id: 'furina', name: 'Furina', element: 'Hydro', weaponType: 'Sword',
-        baseHp: 15307, baseAtk: 244, baseDef: 696, ascStat: 'cr', ascVal: 0.192,
-        passiveDesc: "Fanfare Max : +75% Bonus DGT à toute l'équipe",
-        teamBuff: { dmg: 0.75 },
-        skills: [
-          { name: 'Salon Solitaire (Crabaletta)', mult: 0.149, stat: 'hp', hits: 4, defaultReaction: 'vape' },
-          { name: 'Salon Solitaire (Chevalmarin + Gentilhomme)', mult: 0.085, stat: 'hp', hits: 8, defaultReaction: 'none' },
-          { name: 'Déchaînement : Que le monde réjouisse', mult: 0.205, stat: 'hp', hits: 1, defaultReaction: 'none' }
-        ]
-      },
-      neuvillette: {
-        id: 'neuvillette', name: 'Neuvillette', element: 'Hydro', weaponType: 'Catalyst',
-        baseHp: 14695, baseAtk: 208, baseDef: 576, ascStat: 'cd', ascVal: 0.384,
-        passiveDesc: "Héritier de l'Ancienne Mer : +30% DGT Hydro (3 cumuls draconiques)",
-        teamBuff: { dmg: 0.30 },
-        skills: [
-          { name: 'Attaque Chargée : Jugement Équitable (8 ticks)', mult: 0.145, stat: 'hp', hits: 8, defaultReaction: 'none' },
-          { name: 'Compétence : Ô Larmes, je paierai', mult: 0.232, stat: 'hp', hits: 1, defaultReaction: 'none' },
-          { name: 'Déchaînement : Ô Marées, je suis revenu', mult: 0.401, stat: 'hp', hits: 1, defaultReaction: 'none' }
-        ]
-      },
-      arlecchino: {
-        id: 'arlecchino', name: 'Arlecchino', element: 'Pyro', weaponType: 'Polearm',
-        baseHp: 13103, baseAtk: 342, baseDef: 765, ascStat: 'cd', ascVal: 0.384,
-        passiveDesc: 'Engagement Vital (145%) : +40% DGT Pyro & Conversion Pyro',
+      mavuika: {
+        id: 'mavuika', name: 'Mavuika', element: 'Pyro', weaponType: 'Claymore', icon: 'UI_AvatarIcon_Mavuika',
+        baseHp: 12552, baseAtk: 359, baseDef: 792, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Kiongozi : +40% Bonus DGT décroissant après le Déchaînement élémentaire',
         teamBuff: { dmg: 0.40 },
         skills: [
-          { name: 'Attaque Normale (Masque de la Mort Rouge)', mult: 2.35, stat: 'atk', hits: 6, defaultReaction: 'vape' },
-          { name: "Compétence : Tout n'est que cendres", mult: 2.68, stat: 'atk', hits: 1, defaultReaction: 'none' },
-          { name: 'Déchaînement : Ascension de la Lune', mult: 6.67, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+          { name: 'Déchaînement : Heure des Cieux Brûlants', mult: 8.01, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt' },
+          { name: 'Flamestrider : Attaques Chargées (8 tours)', mult: 1.96, stat: 'atk', hits: 8, duration: 5.5, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'flamestrider', gauge: 1.0, defaultReaction: 'melt' },
+          { name: 'Anneau Radieux (Off-field 6 procs)', mult: 2.30, stat: 'atk', hits: 6, duration: 12.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill_ring', gauge: 1.0, defaultReaction: 'vape_pyro' }
+        ]
+      },
+      citlali: {
+        id: 'citlali', name: 'Citlali', element: 'Cryo', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Citlali',
+        baseHp: 11634, baseAtk: 127, baseDef: 763, ascStat: 'em', ascVal: 115.2,
+        passiveDesc: 'Pluie d’Étoiles Blanches : -20% RÉS Pyro & Hydro sous Gel/Fonte + Bouclier',
+        teamBuff: { dmg: 0.20 },
+        skills: [
+          { name: 'Compétence : Bouclier d’Obsidienne', mult: 3.12, stat: 'atk', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'melt_cryo' },
+          { name: 'Tempête d’Itzpapa (8 ticks Cryo)', mult: 1.85, stat: 'atk', hits: 8, duration: 12.0, icdType: 'custom', icdHits: 3, icdTimer: 2.0, icdTag: 'itzpapa', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Édit de la Nuit', mult: 6.45, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt_cryo' }
         ]
       },
       xilonen: {
-        id: 'xilonen', name: 'Xilonen', element: 'Geo', weaponType: 'Sword',
+        id: 'xilonen', name: 'Xilonen', element: 'Geo', weaponType: 'Sword', icon: 'UI_AvatarIcon_Xilonen',
         baseHp: 12405, baseAtk: 258, baseDef: 930, ascStat: 'def_p', ascVal: 0.36,
         passiveDesc: 'Échantillons Sources : -36% RÉS Élém. ennemie (inclus dans RÉS cible)',
         teamBuff: { dmg: 0.15 },
         skills: [
-          { name: 'Compétence : Lame de Yohualtecuhtli', mult: 2.40, stat: 'def', hits: 2, defaultReaction: 'none' },
-          { name: 'Déchaînement : Rythme Ocelot', mult: 3.80, stat: 'def', hits: 1, defaultReaction: 'none' }
+          { name: 'Compétence : Lame de Yohualtecuhtli', mult: 2.40, stat: 'def', hits: 2, duration: 1.2, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Rythme Ocelot', mult: 3.80, stat: 'def', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' }
         ]
       },
-      kazuha: {
-        id: 'kazuha', name: 'Kaedehara Kazuha', element: 'Anemo', weaponType: 'Sword',
-        baseHp: 13348, baseAtk: 297, baseDef: 807, ascStat: 'em', ascVal: 115.2,
-        passiveDesc: "Poésie de Fuubutsu (900 ME) : +36% Bonus DGT Élém. à l'équipe",
-        teamBuff: { dmg: 0.36 },
+      mualani: {
+        id: 'mualani', name: 'Mualani', element: 'Hydro', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Mualani',
+        baseHp: 15185, baseAtk: 182, baseDef: 570, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: 'Guide des Vagues : Bonus DGT basé sur les cumuls d’élan',
+        teamBuff: {},
         skills: [
-          { name: 'Compétence : Chihayaburu + Plongée', mult: 4.68, stat: 'atk', hits: 1, defaultReaction: 'none' },
-          { name: 'Déchaînement : Coup de Kazuha (5 ticks)', mult: 2.16, stat: 'atk', hits: 5, defaultReaction: 'none' }
+          { name: 'Morsure du Requin (3 charges max)', mult: 0.568, stat: 'hp', hits: 3, duration: 6.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'shark_bite', gauge: 1.0, defaultReaction: 'vape' },
+          { name: 'Déchaînement : Boomsharka-laka', mult: 0.875, stat: 'hp', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'vape' }
         ]
       },
-      bennett: {
-        id: 'bennett', name: 'Bennett', element: 'Pyro', weaponType: 'Sword',
-        baseHp: 12397, baseAtk: 191, baseDef: 771, ascStat: 'er', ascVal: 0.267,
-        passiveDesc: "Merveilleux Voyage (C1 + Niv.13) : +1050 ATQ Flat à l'équipe",
-        teamBuff: { atk: 1050, dmg: 0.15 },
+      kinich: {
+        id: 'kinich', name: 'Kinich', element: 'Dendro', weaponType: 'Claymore', icon: 'UI_AvatarIcon_Kinich',
+        baseHp: 12858, baseAtk: 332, baseDef: 802, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Contrat de Chasse : +320% ATQ sur Canon Perçant après Combustion/Bourgeonnement',
+        teamBuff: {},
         skills: [
-          { name: 'Compétence : Passion Ardente', mult: 2.48, stat: 'atk', hits: 2, defaultReaction: 'melt' },
-          { name: 'Déchaînement : Merveilleux Voyage', mult: 4.19, stat: 'atk', hits: 1, defaultReaction: 'melt' }
+          { name: 'Canon Perçant d’Ajaw (4 tirs)', mult: 7.42, stat: 'atk', hits: 4, duration: 8.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'cannon', gauge: 1.0, defaultReaction: 'spread' },
+          { name: 'Tirs de Boucle (8 tirs)', mult: 1.15, stat: 'atk', hits: 8, duration: 8.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'loop_shot', gauge: 1.0, defaultReaction: 'none' }
+        ]
+      },
+      chasca: {
+        id: 'chasca', name: 'Chasca', element: 'Anemo', weaponType: 'Bow', icon: 'UI_AvatarIcon_Chasca',
+        baseHp: 9797, baseAtk: 347, baseDef: 615, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: 'Cartouches Brillantes : +65% DGT sur les balles converties selon l’équipe',
+        teamBuff: {},
+        skills: [
+          { name: 'Salve de Cartouches Converties (4 salves)', mult: 3.25, stat: 'atk', hits: 16, duration: 7.5, icdType: 'custom', icdHits: 2, icdTimer: 2.0, icdTag: 'shining_shell', gauge: 1.0, defaultReaction: 'vape_pyro' }
+        ]
+      },
+      furina: {
+        id: 'furina', name: 'Furina', element: 'Hydro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Furina',
+        baseHp: 15307, baseAtk: 244, baseDef: 696, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: "Fanfare Max : +75% Bonus DGT à toute l'équipe",
+        teamBuff: { dmg: 0.75 },
+        skills: [
+          { name: 'Salon Solitaire : Crabaletta (4 coups)', mult: 0.149, stat: 'hp', hits: 4, duration: 16.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'crabaletta', gauge: 1.0, defaultReaction: 'vape' },
+          { name: 'Salon Solitaire : Chevalmarin + Gentilhomme', mult: 0.085, stat: 'hp', hits: 12, duration: 16.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'salon_summons', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Que le monde réjouisse', mult: 0.205, stat: 'hp', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' }
+        ]
+      },
+      neuvillette: {
+        id: 'neuvillette', name: 'Neuvillette', element: 'Hydro', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Neuvillette',
+        baseHp: 14695, baseAtk: 208, baseDef: 576, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: "Héritier de l'Ancienne Mer : +30% DGT Hydro (3 cumuls draconiques)",
+        teamBuff: { dmg: 0.30 },
+        skills: [
+          { name: 'Attaque Chargée : Jugement Équitable (8 ticks)', mult: 0.145, stat: 'hp', hits: 8, duration: 3.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'ca', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Compétence : Ô Larmes, je paierai', mult: 0.232, stat: 'hp', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Ô Marées, je suis revenu', mult: 0.401, stat: 'hp', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'none' }
+        ]
+      },
+      arlecchino: {
+        id: 'arlecchino', name: 'Arlecchino', element: 'Pyro', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Arlecchino',
+        baseHp: 13103, baseAtk: 342, baseDef: 765, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Engagement Vital (145%) : +40% DGT Pyro & Conversion Pyro',
+        teamBuff: { dmg: 0.40 },
+        skills: [
+          { name: 'Attaque Normale : Masque de la Mort Rouge (6 coups)', mult: 2.35, stat: 'atk', hits: 6, duration: 3.5, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'na', gauge: 1.0, defaultReaction: 'vape_pyro' },
+          { name: "Compétence : Tout n'est que cendres", mult: 2.68, stat: 'atk', hits: 1, duration: 0.6, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Ascension de la Lune', mult: 6.67, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt' }
+        ]
+      },
+      clorinde: {
+        id: 'clorinde', name: 'Clorinde', element: 'Electro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Clorinde',
+        baseHp: 12956, baseAtk: 337, baseDef: 784, ascStat: 'cr', ascVal: 0.192,
+        passiveDesc: 'Chasseuse de la Nuit : +20% Taux CRIT & +1800 DGT Flat sur Electro',
+        teamBuff: { cr: 0.20 },
+        skills: [
+          { name: 'Chasse de la Nuit : Pistolets + Empalement (12 coups)', mult: 1.48, stat: 'atk', hits: 12, duration: 7.5, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'na', gauge: 1.0, defaultReaction: 'aggravate' },
+          { name: 'Déchaînement : Dernière Lueur (5 coups)', mult: 2.34, stat: 'atk', hits: 5, duration: 1.5, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'aggravate' }
+        ]
+      },
+      navia: {
+        id: 'navia', name: 'Navia', element: 'Geo', weaponType: 'Claymore', icon: 'UI_AvatarIcon_Navia',
+        baseHp: 12650, baseAtk: 352, baseDef: 793, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Entraide mutuelle : +40% ATQ avec 2 alliés Pyro/Hydro/Electro/Cryo',
+        teamBuff: { atk_p: 0.40 },
+        skills: [
+          { name: 'Compétence : Salve Cristalline (6 éclats max)', mult: 7.90, stat: 'atk', hits: 2, duration: 1.2, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Salut du Ciel Azur', mult: 1.35, stat: 'atk', hits: 12, duration: 12.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' }
+        ]
+      },
+      xianyun: {
+        id: 'xianyun', name: 'Xianyun', element: 'Anemo', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Xianyun',
+        baseHp: 10409, baseAtk: 335, baseDef: 573, ascStat: 'atk_p', ascVal: 0.24,
+        passiveDesc: 'Ailes d’Adepte : +10% Taux CRIT Plongée & Buff DGT Plongée d’équipe',
+        teamBuff: { cr: 0.10, dmg: 0.20 },
+        skills: [
+          { name: 'Compétence : Nuages Blancs à l’Aube', mult: 5.26, stat: 'atk', hits: 1, duration: 1.2, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'plunge', gauge: 1.0, defaultReaction: 'none' }
         ]
       },
       nahida: {
-        id: 'nahida', name: 'Nahida', element: 'Dendro', weaponType: 'Catalyst',
+        id: 'nahida', name: 'Nahida', element: 'Dendro', weaponType: 'Catalyst', icon: 'UI_AvatarIcon_Nahida',
         baseHp: 10360, baseAtk: 299, baseDef: 630, ascStat: 'em', ascVal: 115.2,
         passiveDesc: 'Illumination de la Compassion : +250 Maîtrise Élém. au personnage actif',
         teamBuff: { em: 250 },
         skills: [
-          { name: 'Tri-Karma Purification (Proc)', mult: 2.20, stat: 'atk', hits: 6, defaultReaction: 'spread' }
+          { name: 'Tri-Karma Purification (6 procs)', mult: 2.20, stat: 'atk', hits: 6, duration: 15.0, icdType: 'custom', icdHits: 3, icdTimer: 1.0, icdTag: 'skill', gauge: 1.5, defaultReaction: 'spread' }
+        ]
+      },
+      alhaitham: {
+        id: 'alhaitham', name: 'Alhaitham', element: 'Dendro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Alhatham',
+        baseHp: 13348, baseAtk: 313, baseDef: 782, ascStat: 'dmg', ascVal: 0.288,
+        passiveDesc: 'Mystères Dévoilés : Bonus DGT Miroirs basé sur la Maîtrise Élémentaire',
+        teamBuff: {},
+        skills: [
+          { name: 'Attaques Normales Dendro (10 coups)', mult: 1.38, stat: 'atk', hits: 10, duration: 6.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'na', gauge: 1.0, defaultReaction: 'spread' },
+          { name: 'Pluie de Lames : Miroirs (6 salves)', mult: 2.45, stat: 'atk', hits: 6, duration: 9.6, icdType: 'custom', icdHits: 2, icdTimer: 1.6, icdTag: 'mirrors', gauge: 1.0, defaultReaction: 'spread' },
+          { name: 'Déchaînement : Champ de Liens (10 coups)', mult: 2.19, stat: 'atk', hits: 10, duration: 2.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'spread' }
         ]
       },
       yelan: {
-        id: 'yelan', name: 'Yelan', element: 'Hydro', weaponType: 'Bow',
+        id: 'yelan', name: 'Yelan', element: 'Hydro', weaponType: 'Bow', icon: 'UI_AvatarIcon_Yelan',
         baseHp: 14450, baseAtk: 244, baseDef: 548, ascStat: 'cr', ascVal: 0.192,
         passiveDesc: 'Adaptation Aisée : +25% Bonus DGT moyen au personnage déployé',
         teamBuff: { dmg: 0.25 },
         skills: [
-          { name: 'Dé Exquis (Salve 3 dés)', mult: 0.0877, stat: 'hp', hits: 12, defaultReaction: 'none' },
-          { name: 'Compétence : Ligne de Vie', mult: 0.407, stat: 'hp', hits: 1, defaultReaction: 'vape' }
+          { name: 'Dé Exquis (12 salves de 3 dés = 36 hits)', mult: 0.0877, stat: 'hp', hits: 36, duration: 12.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Compétence : Ligne de Vie', mult: 0.407, stat: 'hp', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'vape' }
+        ]
+      },
+      raiden: {
+        id: 'raiden', name: 'Shogun Raiden', element: 'Electro', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Shougun',
+        baseHp: 12907, baseAtk: 337, baseDef: 789, ascStat: 'er', ascVal: 0.32,
+        passiveDesc: 'Œil de Jugement : +24% DGT de Déchaînement à toute l’équipe',
+        teamBuff: { dmg: 0.24 },
+        skills: [
+          { name: 'Déchaînement : Musou no Hitotachi', mult: 7.21, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst_slash', gauge: 2.0, defaultReaction: 'aggravate' },
+          { name: 'Harmonie d’Éther (12 coups d’épée)', mult: 1.52, stat: 'atk', hits: 12, duration: 7.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst_na', gauge: 1.0, defaultReaction: 'aggravate' }
+        ]
+      },
+      ayaka: {
+        id: 'ayaka', name: 'Kamisato Ayaka', element: 'Cryo', weaponType: 'Sword', icon: 'UI_AvatarIcon_Ayaka',
+        baseHp: 12858, baseAtk: 342, baseDef: 784, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Bénédiction de Kanten : +18% DGT Cryo après le sprint',
+        teamBuff: { dmg: 0.18 },
+        skills: [
+          { name: 'Déchaînement : Soumetsu (20 coups)', mult: 2.02, stat: 'atk', hits: 20, duration: 5.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'melt_cryo' },
+          { name: 'Compétence : Hyouka', mult: 4.31, stat: 'atk', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 2.0, defaultReaction: 'melt_cryo' }
+        ]
+      },
+      hutao: {
+        id: 'hutao', name: 'Hu Tao', element: 'Pyro', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Hutao',
+        baseHp: 15552, baseAtk: 106, baseDef: 876, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Sang Bouillant (<50% PV) : +33% DGT Pyro & Conversion ATQ',
+        teamBuff: { dmg: 0.33, cr: 0.12 },
+        skills: [
+          { name: 'Attaque Chargée : Guide de l’Au-delà (8 CA)', mult: 2.42, stat: 'atk', hits: 8, duration: 8.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'ca', gauge: 1.0, defaultReaction: 'vape_pyro' },
+          { name: 'Déchaînement : Apaisement Divin', mult: 6.17, stat: 'atk', hits: 1, duration: 1.2, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt' }
+        ]
+      },
+      kazuha: {
+        id: 'kazuha', name: 'Kaedehara Kazuha', element: 'Anemo', weaponType: 'Sword', icon: 'UI_AvatarIcon_Kazuha',
+        baseHp: 13348, baseAtk: 297, baseDef: 807, ascStat: 'em', ascVal: 115.2,
+        passiveDesc: "Poésie de Fuubutsu (900 ME) : +36% Bonus DGT Élém. à l'équipe",
+        teamBuff: { dmg: 0.36 },
+        skills: [
+          { name: 'Compétence : Chihayaburu + Plongée', mult: 4.68, stat: 'atk', hits: 2, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Déchaînement : Coup de Kazuha (5 ticks)', mult: 2.16, stat: 'atk', hits: 5, duration: 8.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' }
+        ]
+      },
+      zhongli: {
+        id: 'zhongli', name: 'Zhongli', element: 'Geo', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Zhongli',
+        baseHp: 14695, baseAtk: 251, baseDef: 738, ascStat: 'dmg', ascVal: 0.288,
+        passiveDesc: 'Bouclier de Jade : -20% RÉS Élém. & Physique autour du bouclier',
+        teamBuff: {},
+        skills: [
+          { name: 'Déchaînement : Chute de Météore', mult: 0.33, stat: 'hp', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 4.0, defaultReaction: 'none' }
+        ]
+      },
+      ganyu: {
+        id: 'ganyu', name: 'Ganyu', element: 'Cryo', weaponType: 'Bow', icon: 'UI_AvatarIcon_Ganyu',
+        baseHp: 9797, baseAtk: 335, baseDef: 630, ascStat: 'cd', ascVal: 0.384,
+        passiveDesc: 'Harmonie entre Ciel et Terre : +20% DGT Cryo dans le Déchaînement',
+        teamBuff: { dmg: 0.20, cr: 0.20 },
+        skills: [
+          { name: 'Flèche de Givre + Floraison (5 tirs)', mult: 6.22, stat: 'atk', hits: 5, duration: 9.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'ca_bloom', gauge: 1.0, defaultReaction: 'melt_cryo' }
+        ]
+      },
+      bennett: {
+        id: 'bennett', name: 'Bennett', element: 'Pyro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Bennett',
+        baseHp: 12397, baseAtk: 191, baseDef: 771, ascStat: 'er', ascVal: 0.267,
+        passiveDesc: "Merveilleux Voyage (C1 + Niv.13) : +1050 ATQ Flat à l'équipe",
+        teamBuff: { atk: 1050, dmg: 0.15 },
+        skills: [
+          { name: 'Compétence : Passion Ardente', mult: 2.48, stat: 'atk', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 2.0, defaultReaction: 'melt' },
+          { name: 'Déchaînement : Merveilleux Voyage', mult: 4.19, stat: 'atk', hits: 1, duration: 1.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 2.0, defaultReaction: 'melt' }
         ]
       },
       xiangling: {
-        id: 'xiangling', name: 'Xiangling', element: 'Pyro', weaponType: 'Polearm',
+        id: 'xiangling', name: 'Xiangling', element: 'Pyro', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Xiangling',
         baseHp: 10875, baseAtk: 225, baseDef: 669, ascStat: 'em', ascVal: 96,
         passiveDesc: 'Piment de Guoba : +10% ATQ et +15% DGT Pyro (C6)',
         teamBuff: { atk_p: 0.10, dmg: 0.15 },
         skills: [
-          { name: 'Pyrotation (1 tour)', mult: 2.38, stat: 'atk', hits: 10, defaultReaction: 'vape' },
-          { name: 'Guoba (Crachat)', mult: 2.00, stat: 'atk', hits: 3, defaultReaction: 'none' }
+          { name: 'Pyrotation (10 tours — Aucun ICD)', mult: 2.38, stat: 'atk', hits: 10, duration: 14.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'vape_pyro' },
+          { name: 'Guoba (4 crachats — Aucun ICD)', mult: 2.00, stat: 'atk', hits: 4, duration: 7.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'vape_pyro' }
         ]
       },
       xingqiu: {
-        id: 'xingqiu', name: 'Xingqiu', element: 'Hydro', weaponType: 'Sword',
+        id: 'xingqiu', name: 'Xingqiu', element: 'Hydro', weaponType: 'Sword', icon: 'UI_AvatarIcon_Xingqiu',
         baseHp: 10222, baseAtk: 202, baseDef: 758, ascStat: 'atk_p', ascVal: 0.24,
-        passiveDesc: "Pluie d'Épées : Réduction DGT & Hydro appliqué",
+        passiveDesc: "Pluie d'Épées : Réduction DGT & Hydro appliqué hors-terrain",
         teamBuff: {},
         skills: [
-          { name: "Pluie d'Épées (Salve)", mult: 0.97, stat: 'atk', hits: 15, defaultReaction: 'none' },
-          { name: 'Compétence : Pluie battante', mult: 3.40, stat: 'atk', hits: 2, defaultReaction: 'vape' }
+          { name: "Pluie d'Épées (36 épées)", mult: 0.97, stat: 'atk', hits: 36, duration: 15.0, icdType: 'standard', icdHits: 3, icdTimer: 2.5, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' },
+          { name: 'Compétence : Pluie battante (2 coups)', mult: 3.40, stat: 'atk', hits: 2, duration: 0.8, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'vape' }
         ]
       },
       fischl: {
-        id: 'fischl', name: 'Fischl', element: 'Electro', weaponType: 'Bow',
+        id: 'fischl', name: 'Fischl', element: 'Electro', weaponType: 'Bow', icon: 'UI_AvatarIcon_Fischl',
         baseHp: 9189, baseAtk: 244, baseDef: 594, ascStat: 'atk_p', ascVal: 0.24,
-        passiveDesc: 'Foudre Châtiment (A4) : Dégâts Électro supplémentaires sur réaction',
+        passiveDesc: 'Foudre Châtiment (A4) : Dégâts Électro sans ICD sur réaction',
         teamBuff: {},
         skills: [
-          { name: 'Oz (Attaque normale)', mult: 1.78, stat: 'atk', hits: 10, defaultReaction: 'aggravate' },
-          { name: 'A4 : Foudre du Jugement', mult: 0.80, stat: 'atk', hits: 6, defaultReaction: 'aggravate' }
+          { name: 'Oz : Attaques normales (10 tirs)', mult: 1.78, stat: 'atk', hits: 10, duration: 10.0, icdType: 'custom', icdHits: 4, icdTimer: 5.0, icdTag: 'skill_oz', gauge: 1.0, defaultReaction: 'aggravate' },
+          { name: 'Passif A4 : Foudre du Jugement (8 procs)', mult: 0.80, stat: 'atk', hits: 8, duration: 10.0, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'passive_a4', gauge: 1.0, defaultReaction: 'aggravate' }
+        ]
+      },
+      chevreuse: {
+        id: 'chevreuse', name: 'Chevreuse', element: 'Pyro', weaponType: 'Polearm', icon: 'UI_AvatarIcon_Chevreuse',
+        baseHp: 11962, baseAtk: 193, baseDef: 605, ascStat: 'hp_p', ascVal: 0.24,
+        passiveDesc: 'Tactique Surchargée : +40% ATQ et +60% DGT Pyro/Electro (C6)',
+        teamBuff: { atk_p: 0.40, dmg: 0.60 },
+        skills: [
+          { name: 'Compétence : Tir de Suppression', mult: 4.54, stat: 'atk', hits: 1, duration: 0.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'skill', gauge: 1.0, defaultReaction: 'none' }
+        ]
+      },
+      faruzan: {
+        id: 'faruzan', name: 'Faruzan', element: 'Anemo', weaponType: 'Bow', icon: 'UI_AvatarIcon_Faruzan',
+        baseHp: 9570, baseAtk: 196, baseDef: 628, ascStat: 'atk_p', ascVal: 0.24,
+        passiveDesc: 'Voies Secrètes (C6) : +38% DGT Anémo et +40% DGT CRIT Anémo',
+        teamBuff: { dmg: 0.38, cd: 0.40 },
+        skills: [
+          { name: 'Déchaînement : Voies Secrètes', mult: 6.79, stat: 'atk', hits: 1, duration: 1.5, icdType: 'none', icdHits: 1, icdTimer: 0, icdTag: 'burst', gauge: 1.0, defaultReaction: 'none' }
         ]
       }
     };
 
     const WEAPONS = [
-      { id: 'scepter_north', name: "Sceptre de l'Étoile Boréale (5★)", type: 'Catalyst', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { cr: 0.12, dmg: 0.32 } },
-      { id: 'tome_eternal', name: 'Tome du Flux Éternel (5★)', type: 'Catalyst', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.42 } },
-      { id: 'thousand_dreams', name: 'Mille Rêves Flottants (5★)', type: 'Catalyst', baseAtk: 542, subStat: 'em', subVal: 265, bonus: { em: 96, dmg: 0.20 } },
-      { id: 'widsith', name: 'Mouvement Vagabond R5 (4★)', type: 'Catalyst', baseAtk: 510, subStat: 'cd', subVal: 0.551, bonus: { dmg: 0.48 } },
-      { id: 'splendor', name: 'Splendeur des Eaux Calmes (5★)', type: 'Sword', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.28, dmg: 0.24 } },
-      { id: 'mistsplitter', name: 'Reflet de Tranche-Brume (5★)', type: 'Sword', baseAtk: 674, subStat: 'cd', subVal: 0.441, bonus: { dmg: 0.40 } },
-      { id: 'freedom_sworn', name: 'Serment de la Liberté (5★)', type: 'Sword', baseAtk: 608, subStat: 'em', subVal: 198, bonus: { atk_p: 0.20, dmg: 0.16 } },
-      { id: 'favonius_sword', name: 'Épée de Favonius (4★)', type: 'Sword', baseAtk: 454, subStat: 'er', subVal: 0.613, bonus: {} },
-      { id: 'crimson_moon', name: 'Semblance de la Lune Écarlate (5★)', type: 'Polearm', baseAtk: 674, subStat: 'cr', subVal: 0.221, bonus: { dmg: 0.36 } },
-      { id: 'homa', name: 'Bâton de Homa (5★)', type: 'Polearm', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { hp_p: 0.20, atk: 240 } },
-      { id: 'the_catch', name: '« La Prise » R5 (4★)', type: 'Polearm', baseAtk: 510, subStat: 'er', subVal: 0.459, bonus: { cr: 0.12, dmg: 0.32 } },
-      { id: 'aqua', name: "Simulacre d'Eau (5★)", type: 'Bow', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.20 } },
-      { id: 'stringless', name: 'Dernière Corde R5 (4★)', type: 'Bow', baseAtk: 510, subStat: 'em', subVal: 165, bonus: { dmg: 0.48 } }
+      // Catalysts
+      { id: 'scepter_north', name: "Sceptre de l'Étoile Boréale (5★)", type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_Tsaritsa', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { cr: 0.12, dmg: 0.32 } },
+      { id: 'tome_eternal', name: 'Tome du Flux Éternel (5★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_Iudex', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.42 } },
+      { id: 'surfs_up', name: 'Instant de Surf (5★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_MechaPufferfish', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.20, dmg: 0.48 } },
+      { id: 'starcallers_watch', name: 'Veille de l’Appel d’Étoiles (5★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_Figurines', baseAtk: 542, subStat: 'em', subVal: 265, bonus: { em: 100, dmg: 0.28 } },
+      { id: 'thousand_dreams', name: 'Mille Rêves Flottants (5★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_Ayus', baseAtk: 542, subStat: 'em', subVal: 265, bonus: { em: 96, dmg: 0.20 } },
+      { id: 'cranes_echo', name: 'Écho de la Grue (5★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_MountainGale', baseAtk: 741, subStat: 'atk_p', subVal: 0.165, bonus: { dmg: 0.28 } },
+      { id: 'widsith', name: 'Mouvement Vagabond R5 (4★)', type: 'Catalyst', icon: 'UI_EquipIcon_Catalyst_Troupe', baseAtk: 510, subStat: 'cd', subVal: 0.551, bonus: { dmg: 0.48 } },
+      // Swords
+      { id: 'splendor', name: 'Splendeur des Eaux Calmes (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Regalis', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.28, dmg: 0.24 } },
+      { id: 'peak_patrol', name: 'Chanson de Patrouille des Pics (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Xilonen', baseAtk: 542, subStat: 'def_p', subVal: 0.827, bonus: { def_p: 0.16, dmg: 0.256 } },
+      { id: 'absolution', name: 'Absolution (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Estoc', baseAtk: 674, subStat: 'cd', subVal: 0.441, bonus: { cd: 0.20, dmg: 0.48 } },
+      { id: 'light_foliar', name: 'Lumière d’Incision Foliaire (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Ayus', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { cr: 0.04, dmg: 0.36 } },
+      { id: 'mistsplitter', name: 'Reflet de Tranche-Brume (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Narukami', baseAtk: 674, subStat: 'cd', subVal: 0.441, bonus: { dmg: 0.40 } },
+      { id: 'freedom_sworn', name: 'Serment de la Liberté (5★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Widsith', baseAtk: 608, subStat: 'em', subVal: 198, bonus: { atk_p: 0.20, dmg: 0.16 } },
+      { id: 'favonius_sword', name: 'Épée de Favonius (4★)', type: 'Sword', icon: 'UI_EquipIcon_Sword_Zephyrus', baseAtk: 454, subStat: 'er', subVal: 0.613, bonus: {} },
+      // Claymores
+      { id: 'thousand_suns', name: 'Mille Soleils Brûlants (5★)', type: 'Claymore', icon: 'UI_EquipIcon_Claymore_Radiance', baseAtk: 741, subStat: 'cr', subVal: 0.11, bonus: { cd: 0.35, atk_p: 0.49 } },
+      { id: 'fang_mountain', name: 'Croc du Roi de la Montagne (5★)', type: 'Claymore', icon: 'UI_EquipIcon_Claymore_EmeraldSword', baseAtk: 741, subStat: 'cr', subVal: 0.11, bonus: { dmg: 0.60 } },
+      { id: 'verdict', name: 'Condamneur (5★)', type: 'Claymore', icon: 'UI_EquipIcon_Claymore_GoldenVerdict', baseAtk: 674, subStat: 'cr', subVal: 0.221, bonus: { atk_p: 0.20, dmg: 0.36 } },
+      { id: 'serpent_spine', name: 'Ossature du Dragon R5 (4★)', type: 'Claymore', icon: 'UI_EquipIcon_Claymore_Kione', baseAtk: 510, subStat: 'cr', subVal: 0.276, bonus: { dmg: 0.50 } },
+      // Polearms
+      { id: 'crimson_moon', name: 'Semblance de la Lune Écarlate (5★)', type: 'Polearm', icon: 'UI_EquipIcon_Pole_BloodMoon', baseAtk: 674, subStat: 'cr', subVal: 0.221, bonus: { dmg: 0.36 } },
+      { id: 'engulfing', name: 'Lumière du Faucheur (5★)', type: 'Polearm', icon: 'UI_EquipIcon_Pole_Narukami', baseAtk: 608, subStat: 'er', subVal: 0.551, bonus: { atk_p: 0.42, er: 0.30 } },
+      { id: 'homa', name: 'Bâton de Homa (5★)', type: 'Polearm', icon: 'UI_EquipIcon_Pole_Homa', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { hp_p: 0.20, atk: 240 } },
+      { id: 'the_catch', name: '« La Prise » R5 (4★)', type: 'Polearm', icon: 'UI_EquipIcon_Pole_Mori', baseAtk: 510, subStat: 'er', subVal: 0.459, bonus: { cr: 0.12, dmg: 0.32 } },
+      // Bows
+      { id: 'astral_vulture', name: 'Plumage Cramoisi du Vautour Astral (5★)', type: 'Bow', icon: 'UI_EquipIcon_Bow_Qucusaur', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { atk_p: 0.24, dmg: 0.48 } },
+      { id: 'aqua', name: "Simulacre d'Eau (5★)", type: 'Bow', icon: 'UI_EquipIcon_Bow_Kirin', baseAtk: 542, subStat: 'cd', subVal: 0.882, bonus: { hp_p: 0.16, dmg: 0.20 } },
+      { id: 'first_great_magic', name: 'La Première Grande Magie (5★)', type: 'Bow', icon: 'UI_EquipIcon_Bow_Pledge', baseAtk: 608, subStat: 'cd', subVal: 0.662, bonus: { atk_p: 0.32, dmg: 0.16 } },
+      { id: 'stringless', name: 'Dernière Corde R5 (4★)', type: 'Bow', icon: 'UI_EquipIcon_Bow_Troupe', baseAtk: 510, subStat: 'em', subVal: 165, bonus: { dmg: 0.48 } }
     ];
 
     const ARTIFACT_SETS = {
+      obsidian_codex: { name: 'Codex d’Obsidienne', bonus2: { dmg: 0.15 }, bonus4: { cr: 0.40 }, team4: {} },
+      cinder_city: { name: 'Parchemin du Héros de Cendre', bonus2: {}, bonus4: { dmg: 0.12 }, team4: { dmg: 0.40 } },
       marechaussee: { name: 'Chasseur de la Maréchaussée', bonus2: { dmg: 0.15 }, bonus4: { cr: 0.36 }, team4: {} },
       golden_troupe: { name: 'Troupe Dorée', bonus2: { dmg: 0.20 }, bonus4: { dmg: 0.50 }, team4: {} },
       fragment_whimsy: { name: "Fragment d'Harmonie", bonus2: { atk_p: 0.18 }, bonus4: { dmg: 0.54 }, team4: {} },
       emblem: { name: 'Emblème du Destin Brisé', bonus2: { er: 0.20 }, bonus4: { dmg: 0.45 }, team4: {} },
-      cinder_city: { name: 'Parchemin du Héros de Cendre', bonus2: {}, bonus4: { dmg: 0.12 }, team4: { dmg: 0.40 } },
       vv: { name: 'Ombre de la Verte Chasseuse', bonus2: { dmg: 0.15 }, bonus4: {}, team4: {} },
       noblesse: { name: 'Ancien Rituel Royal', bonus2: { dmg: 0.20 }, bonus4: {}, team4: { atk_p: 0.20 } },
       blizzard: { name: 'Briseur de Glace', bonus2: { dmg: 0.15 }, bonus4: { cr: 0.40 }, team4: {} },
@@ -791,21 +1066,21 @@
 
     let state = {
       team: [
-        { charId: 'tsaritsa', weaponId: 'scepter_north', cons: 0, passiveActive: true, artifacts: { flower: 'art_36', plume: 'art_37', sands: 'art_38', goblet: 'art_39', circlet: 'art_40' } },
-        { charId: 'furina', weaponId: 'splendor', cons: 0, passiveActive: true, artifacts: { flower: 'art_6', plume: 'art_7', sands: 'art_8', goblet: 'art_9', circlet: 'art_10' } },
-        { charId: 'xilonen', weaponId: 'favonius_sword', cons: 0, passiveActive: true, artifacts: { flower: 'art_21', plume: 'art_22', sands: 'art_23', goblet: 'art_24', circlet: 'art_25' } },
-        { charId: 'bennett', weaponId: 'mistsplitter', cons: 6, passiveActive: true, artifacts: { flower: 'art_31', plume: 'art_32', sands: 'art_33', goblet: 'art_34', circlet: 'art_35' } }
+        { charId: 'tsaritsa', weaponId: 'scepter_north', cons: 0, passiveActive: true, artifacts: { flower: 'art_41', plume: 'art_42', sands: 'art_43', goblet: 'art_44', circlet: 'art_45' } },
+        { charId: 'furina', weaponId: 'splendor', cons: 0, passiveActive: true, artifacts: { flower: 'art_16', plume: 'art_17', sands: 'art_18', goblet: 'art_19', circlet: 'art_20' } },
+        { charId: 'xilonen', weaponId: 'peak_patrol', cons: 0, passiveActive: true, artifacts: { flower: 'art_6', plume: 'art_7', sands: 'art_8', goblet: 'art_9', circlet: 'art_10' } },
+        { charId: 'bennett', weaponId: 'mistsplitter', cons: 6, passiveActive: true, artifacts: { flower: 'art_36', plume: 'art_37', sands: 'art_38', goblet: 'art_39', circlet: 'art_40' } }
       ],
       enemy: { lvl: 100, res: 10, shred: 40 },
       duration: 20,
       rotation: [
-        { slot: 1, skillIdx: 2, hits: 1, reaction: 'none' },
-        { slot: 1, skillIdx: 0, hits: 4, reaction: 'none' },
-        { slot: 2, skillIdx: 0, hits: 2, reaction: 'none' },
-        { slot: 3, skillIdx: 1, hits: 1, reaction: 'melt' },
-        { slot: 0, skillIdx: 2, hits: 1, reaction: 'melt' },
-        { slot: 0, skillIdx: 1, hits: 1, reaction: 'melt' },
-        { slot: 0, skillIdx: 0, hits: 3, reaction: 'none' }
+        { slot: 1, skillIdx: 2, hits: 1, reaction: 'none', icdMode: 'auto' },
+        { slot: 1, skillIdx: 0, hits: 4, reaction: 'vape', icdMode: 'auto' },
+        { slot: 2, skillIdx: 0, hits: 2, reaction: 'none', icdMode: 'auto' },
+        { slot: 3, skillIdx: 1, hits: 1, reaction: 'melt', icdMode: 'auto' },
+        { slot: 0, skillIdx: 2, hits: 1, reaction: 'melt', icdMode: 'auto' },
+        { slot: 0, skillIdx: 1, hits: 1, reaction: 'melt', icdMode: 'auto' },
+        { slot: 0, skillIdx: 0, hits: 3, reaction: 'melt_cryo', icdMode: 'auto' }
       ],
       inventory: generateDefaultInventory(),
       compare: { slotA: null, slotB: null }
@@ -824,8 +1099,53 @@
     }
 
     /* ============================================================================
-       4. STAT & DAMAGE ENGINE
+       4. STAT, ICD & DAMAGE ENGINE
        ============================================================================ */
+    function computeReactiveHits(skill, totalHits, icdMode = 'auto', sharedState = null) {
+      if (totalHits <= 0) return { reactiveHits: 0, rawHits: 0 };
+      if (icdMode === 'force_all' || skill.icdType === 'none') {
+        if (sharedState && skill.icdTag) {
+          sharedState[skill.icdTag] = { hitCounter: 0, elapsed: 0 };
+        }
+        return { reactiveHits: totalHits, rawHits: 0 };
+      }
+
+      const hitRule = skill.icdHits || 3;
+      const timerRule = skill.icdTimer || 2.5;
+      const dur = skill.duration || (totalHits * 0.5);
+      const dt = totalHits > 1 ? dur / (totalHits - 1) : 0;
+
+      const tagKey = skill.icdTag || 'default';
+      const tracker = sharedState && sharedState[tagKey]
+        ? sharedState[tagKey]
+        : { hitCounter: 0, elapsed: timerRule + 0.1 };
+
+      let reactiveHits = 0;
+      for (let i = 0; i < totalHits; i++) {
+        if (i > 0) tracker.elapsed += dt;
+        if (tracker.elapsed >= timerRule || tracker.hitCounter === 0) {
+          reactiveHits++;
+          tracker.elapsed = 0;
+          tracker.hitCounter = 1;
+        } else {
+          tracker.hitCounter++;
+          if (tracker.hitCounter >= hitRule) {
+            tracker.hitCounter = 0;
+          }
+        }
+      }
+
+      if (sharedState) {
+        tracker.elapsed += 0.8; // Swap / animation gap between consecutive actions
+        sharedState[tagKey] = tracker;
+      }
+
+      return {
+        reactiveHits,
+        rawHits: Math.max(0, totalHits - reactiveHits)
+      };
+    }
+
     function getResonances(teamSlots) {
       const counts = {};
       teamSlots.forEach(s => {
@@ -1004,22 +1324,34 @@
       container.innerHTML = '';
 
       state.team.forEach((slot, idx) => {
-        const char = CHARACTERS[slot.charId];
+        const char = CHARACTERS[slot.charId] || CHARACTERS.tsaritsa;
         const stats = computeCharStats(idx);
         const compatibleWeapons = WEAPONS.filter(w => w.type === char.weaponType);
+        const currentWeap = compatibleWeapons.find(w => w.id === slot.weaponId) || compatibleWeapons[0];
         const elLower = char.element.toLowerCase();
+        const initials = char.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
 
         const card = document.createElement('div');
         card.className = `surface-card rounded-2xl overflow-hidden flex flex-col justify-between el-${elLower}-ring transition-transform duration-150 hover:-translate-y-0.5`;
         card.innerHTML = `
           <div>
-            <!-- Elemental Gradient Top Banner -->
+            <!-- Elemental Gradient Top Banner with Character Portrait -->
             <div class="el-${elLower}-banner px-4 py-3 flex items-center justify-between gap-2">
-              <span class="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg border el-${elLower}-badge">
-                ${getElementSVG(char.element)}
-                ${char.element}
-              </span>
-              <div class="flex items-center gap-1.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="relative w-10 h-10 rounded-xl overflow-hidden bg-[#0d111b] border border-white/20 shrink-0 flex items-center justify-center shadow-md">
+                  <img src="${ICON_CDN}${char.icon}.png" alt="${char.name}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    class="w-full h-full object-cover" />
+                  <div style="display:none;" class="w-full h-full items-center justify-center font-display font-extrabold text-xs text-white bg-gradient-to-br from-slate-800 to-slate-950">
+                    ${initials}
+                  </div>
+                </div>
+                <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-lg border el-${elLower}-badge">
+                  ${getElementSVG(char.element)}
+                  ${char.element}
+                </span>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
                 <select data-idx="${idx}" class="sel-cons rounded-lg px-2 py-1 text-[11px] font-bold mono text-[#d3bc8e]">
                   ${[0,1,2,3,4,5,6].map(c => `<option value="${c}" ${slot.cons === c ? 'selected' : ''}>C${c}</option>`).join('')}
                 </select>
@@ -1040,9 +1372,17 @@
 
               <div>
                 <label class="block text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-1">Arme (${char.weaponType})</label>
-                <select data-idx="${idx}" class="sel-weap w-full rounded-xl px-3 py-1.5 text-xs text-slate-200">
-                  ${compatibleWeapons.map(w => `<option value="${w.id}" ${w.id === slot.weaponId ? 'selected' : ''}>${w.name}</option>`).join('')}
-                </select>
+                <div class="flex items-center gap-2">
+                  <div class="w-8 h-8 rounded-lg bg-[#0d111b] border border-white/10 shrink-0 overflow-hidden flex items-center justify-center">
+                    <img src="${ICON_CDN}${currentWeap?.icon || ''}.png" alt="${currentWeap?.name || ''}"
+                      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                      class="w-full h-full object-contain p-0.5" />
+                    <span style="display:none;" class="text-[10px] text-[#d3bc8e] font-bold">⚔</span>
+                  </div>
+                  <select data-idx="${idx}" class="sel-weap w-full rounded-xl px-2.5 py-1.5 text-xs text-slate-200 truncate">
+                    ${compatibleWeapons.map(w => `<option value="${w.id}" ${w.id === slot.weaponId ? 'selected' : ''}>${w.name}</option>`).join('')}
+                  </select>
+                </div>
               </div>
 
               <label class="flex items-start gap-2.5 text-[11px] text-slate-300 bg-[#0d111b]/80 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:border-[#d3bc8e]/30 transition">
@@ -1146,17 +1486,29 @@
 
       let totalRotationDmg = 0;
       const charTotals = [0, 0, 0, 0];
+      const sharedIcdByChar = [{}, {}, {}, {}];
 
       state.rotation.forEach((act, rIdx) => {
         const slot = state.team[act.slot];
-        const char = CHARACTERS[slot.charId];
+        const char = CHARACTERS[slot.charId] || CHARACTERS.tsaritsa;
         const skill = char.skills[act.skillIdx] || char.skills[0];
         const stats = computeCharStats(act.slot);
-        const dmg = calculateHitDamage(stats, skill, act.reaction, state.enemy);
+        const icdMode = act.icdMode || 'auto';
 
-        const rowTotal = dmg.avg * act.hits;
+        const { reactiveHits, rawHits } = computeReactiveHits(skill, act.hits, icdMode, sharedIcdByChar[act.slot]);
+        const reactDmg = calculateHitDamage(stats, skill, act.reaction, state.enemy);
+        const rawDmg = calculateHitDamage(stats, skill, 'none', state.enemy);
+
+        const rowTotal = act.reaction === 'none'
+          ? rawDmg.avg * act.hits
+          : (reactDmg.avg * reactiveHits) + (rawDmg.avg * rawHits);
+
         totalRotationDmg += rowTotal;
         charTotals[act.slot] += rowTotal;
+
+        const icdBadgeText = skill.icdType === 'none'
+          ? `Sans ICD · ${skill.gauge || 1}U`
+          : `ICD ${skill.icdHits || 3}h/${skill.icdTimer || 2.5}s · ${skill.gauge || 1}U`;
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-white/[0.03] transition';
@@ -1167,9 +1519,13 @@
             </select>
           </td>
           <td class="py-2.5 px-3">
-            <select data-ridx="${rIdx}" class="rot-skill rounded-lg px-2.5 py-1.5 text-slate-200 max-w-[240px]">
+            <select data-ridx="${rIdx}" class="rot-skill rounded-lg px-2.5 py-1.5 text-slate-200 max-w-[230px]">
               ${char.skills.map((sk, si) => `<option value="${si}" ${si === act.skillIdx ? 'selected' : ''}>${sk.name}</option>`).join('')}
             </select>
+            <div class="mt-1 flex items-center gap-1.5 text-[10px]">
+              <span class="px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/25 mono">${icdBadgeText}</span>
+              ${skill.icdTag ? `<span class="text-slate-500 mono">tag:${skill.icdTag}</span>` : ''}
+            </div>
           </td>
           <td class="py-2.5 px-3 text-center">
             <input type="number" min="1" max="50" value="${act.hits}" data-ridx="${rIdx}" class="rot-hits w-14 rounded-lg px-2 py-1.5 text-white mono text-center" />
@@ -1184,9 +1540,20 @@
               <option value="aggravate" ${act.reaction === 'aggravate' ? 'selected' : ''}>Suractivation</option>
               <option value="spread" ${act.reaction === 'spread' ? 'selected' : ''}>Propagation</option>
             </select>
+            ${act.reaction !== 'none' ? `
+              <div class="mt-1 text-[10px] mono ${reactiveHits < act.hits ? 'text-amber-300' : 'text-emerald-400'}">
+                ${reactiveHits}/${act.hits} coup(s) réactif(s)
+              </div>
+            ` : ''}
           </td>
-          <td class="py-2.5 px-3 text-right mono text-slate-400">${formatNum(dmg.nonCrit)}</td>
-          <td class="py-2.5 px-3 text-right mono text-[#d3bc8e]">${formatNum(dmg.crit)}</td>
+          <td class="py-2.5 px-3 text-center">
+            <select data-ridx="${rIdx}" class="rot-icd-mode rounded-lg px-2 py-1 text-[11px] text-slate-200">
+              <option value="auto" ${icdMode === 'auto' ? 'selected' : ''}>Auto ICD</option>
+              <option value="force_all" ${icdMode === 'force_all' ? 'selected' : ''}>100% Réactif</option>
+            </select>
+          </td>
+          <td class="py-2.5 px-3 text-right mono text-slate-400">${formatNum(reactDmg.nonCrit)}</td>
+          <td class="py-2.5 px-3 text-right mono text-[#d3bc8e]">${formatNum(reactDmg.crit)}</td>
           <td class="py-2.5 px-3 text-right mono font-bold text-white">${formatNum(rowTotal)}</td>
           <td class="py-2.5 px-3 text-center">
             <button data-ridx="${rIdx}" class="rot-del w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-400 font-bold transition">✕</button>
@@ -1252,6 +1619,11 @@
         saveState();
         renderRotation();
       }));
+      document.querySelectorAll('.rot-icd-mode').forEach(el => el.addEventListener('change', e => {
+        state.rotation[+e.target.dataset.ridx].icdMode = e.target.value;
+        saveState();
+        renderRotation();
+      }));
       document.querySelectorAll('.rot-del').forEach(el => el.addEventListener('click', e => {
         state.rotation.splice(+e.target.dataset.ridx, 1);
         saveState();
@@ -1260,7 +1632,7 @@
     }
 
     /* ============================================================================
-       6. ARTIFACT OPTIMIZER
+       6. ARTIFACT OPTIMIZER (WITH ICD & MAIN STAT CONSTRAINTS)
        ============================================================================ */
     function populateOptimizerSelectors() {
       const charSel = document.getElementById('opt-char-slot');
@@ -1285,17 +1657,26 @@
       const slotIdx = +document.getElementById('opt-char-slot').value;
       const skillIdx = +document.getElementById('opt-skill-idx').value;
       const minEr = (+document.getElementById('opt-min-er').value) / 100;
+      const minCr = (+document.getElementById('opt-min-cr').value) / 100;
+      const minEm = +document.getElementById('opt-min-em').value;
       const forceSet = document.getElementById('opt-force-set').value;
+      const optReactionSel = document.getElementById('opt-reaction').value;
+
+      const reqSands = document.getElementById('opt-main-sands').value;
+      const reqGoblet = document.getElementById('opt-main-goblet').value;
+      const reqCirclet = document.getElementById('opt-main-circlet').value;
 
       const char = CHARACTERS[state.team[slotIdx].charId];
       const skill = char.skills[skillIdx];
+      const targetReaction = optReactionSel === 'default' ? (skill.defaultReaction || 'none') : optReactionSel;
+      const { reactiveHits, rawHits } = computeReactiveHits(skill, skill.hits || 1, 'auto');
 
       const bySlot = {
         flower: state.inventory.filter(a => a.slot === 'flower'),
         plume: state.inventory.filter(a => a.slot === 'plume'),
-        sands: state.inventory.filter(a => a.slot === 'sands'),
-        goblet: state.inventory.filter(a => a.slot === 'goblet'),
-        circlet: state.inventory.filter(a => a.slot === 'circlet')
+        sands: state.inventory.filter(a => a.slot === 'sands' && (reqSands === 'any' || a.main === reqSands)),
+        goblet: state.inventory.filter(a => a.slot === 'goblet' && (reqGoblet === 'any' || a.main === reqGoblet)),
+        circlet: state.inventory.filter(a => a.slot === 'circlet' && (reqCirclet === 'any' || a.main === reqCirclet))
       };
 
       const topBuilds = [];
@@ -1313,30 +1694,35 @@
                   if (count < 4) continue;
                 }
                 const stats = computeCharStats(slotIdx, eq);
-                if (stats.er < minEr) continue;
+                if (stats.er < minEr || stats.cr < minCr || stats.em < minEm) continue;
 
-                const dmg = calculateHitDamage(stats, skill, skill.defaultReaction || 'none', state.enemy);
-                topBuilds.push({ eq, stats, dmg });
+                const reactDmg = calculateHitDamage(stats, skill, targetReaction, state.enemy);
+                const rawDmg = calculateHitDamage(stats, skill, 'none', state.enemy);
+                const totalSkillAvg = targetReaction === 'none'
+                  ? rawDmg.avg * (skill.hits || 1)
+                  : (reactDmg.avg * reactiveHits) + (rawDmg.avg * rawHits);
+
+                topBuilds.push({ eq, stats, totalSkillAvg });
               }
             }
           }
         }
       }
 
-      topBuilds.sort((a, b) => b.dmg.avg - a.dmg.avg);
+      topBuilds.sort((a, b) => b.totalSkillAvg - a.totalSkillAvg);
       const best5 = topBuilds.slice(0, 5);
       const container = document.getElementById('opt-results');
 
       if (!best5.length) {
         container.innerHTML = `<div class="p-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-200 text-xs">
-          Aucune combinaison ne respecte vos contraintes (${combinationsTested.toLocaleString('fr-FR')} évaluées). Essayez d'abaisser le seuil de Recharge d'Énergie.
+          Aucune combinaison ne respecte vos contraintes (${combinationsTested.toLocaleString('fr-FR')} évaluées). Essayez d'assouplir les filtres de stats principales ou de Recharge d'Énergie.
         </div>`;
         return;
       }
 
       container.innerHTML = `
-        <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-          <span>${combinationsTested.toLocaleString('fr-FR')} combinaisons analysées</span>
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 px-1">
+          <span>${combinationsTested.toLocaleString('fr-FR')} combinaisons analysées · ICD appliqué (${reactiveHits}/${skill.hits || 1} coups réactifs)</span>
           <span class="text-[#d3bc8e] font-semibold">Top ${best5.length} Builds</span>
         </div>
         ${best5.map((b, rank) => `
@@ -1351,13 +1737,14 @@
                 <span>ATQ <strong class="text-slate-200">${formatNum(b.stats.atk)}</strong></span>
                 <span>DÉF <strong class="text-slate-200">${formatNum(b.stats.def)}</strong></span>
                 <span>CRIT <strong class="text-[#d3bc8e]">${(b.stats.cr*100).toFixed(1)}% / ${(b.stats.cd*100).toFixed(1)}%</strong></span>
+                <span>ME <strong class="text-emerald-300">${Math.round(b.stats.em)}</strong></span>
                 <span>RE <strong class="text-sky-300">${(b.stats.er*100).toFixed(0)}%</strong></span>
               </div>
             </div>
             <div class="flex items-center gap-4">
               <div class="text-right">
-                <div class="text-[10px] text-slate-400 uppercase tracking-wider">Dégâts Moyens</div>
-                <div class="text-base font-extrabold text-emerald-400 mono">${formatNum(b.dmg.avg)}</div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">Dégâts Totaux Aptitude</div>
+                <div class="text-base font-extrabold text-emerald-400 mono">${formatNum(b.totalSkillAvg)}</div>
               </div>
               <button data-rank="${rank}" class="btn-equip-opt px-3.5 py-2 rounded-xl bg-[#d3bc8e] hover:brightness-110 text-slate-950 text-xs font-extrabold transition">
                 Équiper
@@ -1483,11 +1870,15 @@
 
     function snapshotCurrentBuild() {
       let total = 0;
+      const sharedIcdByChar = [{}, {}, {}, {}];
       state.rotation.forEach(act => {
         const char = CHARACTERS[state.team[act.slot].charId];
         const skill = char.skills[act.skillIdx] || char.skills[0];
         const stats = computeCharStats(act.slot);
-        total += calculateHitDamage(stats, skill, act.reaction, state.enemy).avg * act.hits;
+        const { reactiveHits, rawHits } = computeReactiveHits(skill, act.hits, act.icdMode || 'auto', sharedIcdByChar[act.slot]);
+        const reactDmg = calculateHitDamage(stats, skill, act.reaction, state.enemy).avg;
+        const rawDmg = calculateHitDamage(stats, skill, 'none', state.enemy).avg;
+        total += act.reaction === 'none' ? rawDmg * act.hits : (reactDmg * reactiveHits) + (rawDmg * rawHits);
       });
       return {
         timestamp: new Date().toLocaleTimeString('fr-FR'),
@@ -1496,6 +1887,75 @@
         totalDmg: total,
         dps: total / (state.duration || 20)
       };
+    }
+
+    function renderIcdDatabase() {
+      const grid = document.getElementById('icddb-grid');
+      if (!grid) return;
+      const query = (document.getElementById('icddb-search')?.value || '').toLowerCase().trim();
+      const elFilter = document.getElementById('icddb-el-filter')?.value || 'all';
+
+      const chars = Object.values(CHARACTERS).filter(c => {
+        const matchEl = elFilter === 'all' || c.element === elFilter;
+        const matchQ = !query || c.name.toLowerCase().includes(query) || c.skills.some(s => s.name.toLowerCase().includes(query));
+        return matchEl && matchQ;
+      });
+
+      grid.innerHTML = chars.map(c => {
+        const elLower = c.element.toLowerCase();
+        const ascPct = !['em'].includes(c.ascStat);
+        const ascDisplay = ascPct ? `+${(c.ascVal * 100).toFixed(1)}%` : `+${Math.round(c.ascVal)}`;
+        const initials = c.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+
+        return `
+          <div class="bg-[#0e121c] border border-white/[0.08] rounded-2xl overflow-hidden flex flex-col justify-between">
+            <div class="el-${elLower}-banner px-4 py-3 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl overflow-hidden bg-[#0d111b] border border-white/20 flex items-center justify-center shrink-0">
+                  <img src="${ICON_CDN}${c.icon}.png" alt="${c.name}"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    class="w-full h-full object-cover" />
+                  <div style="display:none;" class="w-full h-full items-center justify-center font-bold text-xs text-white">${initials}</div>
+                </div>
+                <div>
+                  <div class="font-display font-bold text-sm text-white">${c.name}</div>
+                  <div class="text-[11px] text-slate-300 mono">
+                    PV ${formatNum(c.baseHp)} · ATQ ${c.baseAtk} · DÉF ${c.baseDef} · <span class="text-[#d3bc8e]">${STAT_LABELS[c.ascStat]} ${ascDisplay}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-lg border el-${elLower}-badge">
+                ${getElementSVG(c.element)}
+                ${c.element}
+              </span>
+            </div>
+
+            <div class="p-4 space-y-2">
+              ${c.skills.map(sk => {
+                const icdLabel = sk.icdType === 'none'
+                  ? 'Aucun ICD (Chaque coup)'
+                  : `${sk.icdHits} coups / ${sk.icdTimer}s`;
+                return `
+                  <div class="bg-[#131825] border border-white/[0.05] rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                    <div>
+                      <div class="font-semibold text-slate-100">${sk.name}</div>
+                      <div class="text-[10px] text-slate-400 mono">Mult: ${(sk.mult * 100).toFixed(1)}% ${sk.stat.toUpperCase()} · Tag: <span class="text-slate-300">${sk.icdTag}</span></div>
+                    </div>
+                    <div class="flex items-center gap-1.5 mono text-[10px]">
+                      <span class="px-2 py-0.5 rounded ${sk.icdType === 'none' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-purple-500/15 text-purple-300 border border-purple-500/30'}">
+                        ${icdLabel}
+                      </span>
+                      <span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold">
+                        ${sk.gauge}U
+                      </span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderCompare() {
@@ -1616,11 +2076,15 @@
       populateOptimizerSelectors();
       renderInventory();
       renderCompare();
+      renderIcdDatabase();
     }
 
-    // Mobile Sidebar Drawer Controls
+    document.getElementById('icddb-search')?.addEventListener('input', renderIcdDatabase);
+    document.getElementById('icddb-el-filter')?.addEventListener('change', renderIcdDatabase);
+
     const sidebar = document.getElementById('app-sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
+
     function openSidebar() {
       sidebar.classList.remove('-translate-x-full');
       backdrop.classList.remove('hidden');
